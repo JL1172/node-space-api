@@ -7,11 +7,12 @@ import {
 } from './middleware/registration';
 import { AuthenticationController } from './auth.controller';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
+import { BcryptProvider } from './providers/bcrypt';
 
 @Module({
   imports: [],
   controllers: [AuthenticationController],
-  providers: [PrismaProvider],
+  providers: [PrismaProvider, BcryptProvider],
 })
 export class AuthenticationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

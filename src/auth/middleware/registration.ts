@@ -66,6 +66,7 @@ export class SanitizeRegistrationBody implements NestMiddleware {
       );
     });
     req.body['email'] = this.validator.normalizeEmail(req.body['email']);
+    req.body['age'] = Number(req.body.age);
     next();
   }
 }
