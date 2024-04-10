@@ -1,16 +1,10 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { ValidateRegistrationBody } from './auth/middleware/registration';
+import { Module } from '@nestjs/common';
+import { AuthenticationModule } from './auth/auth-module';
+import { PrismaProvider } from './providers/prisma';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthenticationModule],
   controllers: [],
-  providers: [],
+  providers: [PrismaProvider],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ValidateRegistrationBody)
-      .forRoutes('/api/auth/registration');
-  }
-}
+export class AppModule {}
