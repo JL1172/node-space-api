@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import 'dotenv/config';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ErrorMiddleware } from './middleware/error';
+import { ErrorMiddleware } from './global-utils/middleware/error';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

@@ -10,7 +10,7 @@ import { RegistrationBody } from '../dtos/RegistrationBody';
 import { validateOrReject } from 'class-validator';
 import * as limiter from 'express-rate-limit';
 import * as validator from 'validator';
-import { PrismaProvider } from 'src/providers/prisma';
+import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { User } from '@prisma/client';
 
 @Injectable()

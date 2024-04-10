@@ -6,7 +6,7 @@ import {
   VerifyUserIsUnique,
 } from './middleware/registration';
 import { AuthenticationController } from './auth.controller';
-import { PrismaProvider } from 'src/providers/prisma';
+import { PrismaProvider } from 'src/global-utils/providers/prisma';
 
 @Module({
   imports: [],
