@@ -22,10 +22,13 @@ export class AuthenticationController {
   }
   @Post('/login')
   @HttpCode(200)
-  public async login(): Promise<void> {
-    //todo need to finish this functionality and debug
-    // this.jwt.createJwtToken(this.user.getUser());
-    // return this.jwt.getJwtToken();
+  public login(): { token: string } {
+    this.jwt.createJwtToken(this.user.getUser());
+    return { token: this.jwt.getJwtToken() };
+  }
+  @Post('/change-password')
+  public changePassword(): void {
+    console.log('change password success.');
   }
   @Get('/')
   public async getAll(): Promise<User[]> {
