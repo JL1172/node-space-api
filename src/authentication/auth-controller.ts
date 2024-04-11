@@ -16,6 +16,10 @@ export class AuthenticationController {
     await this.prisma.createNewUser(body);
     return 'New Account Successfully Created.';
   }
+  @Post('/login')
+  public async login(): Promise<string> {
+    return 'successfully logged in';
+  }
   @Get('/')
   public async getAll(): Promise<User[]> {
     return await this.prisma.getAllUsers();

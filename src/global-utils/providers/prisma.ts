@@ -6,7 +6,7 @@ import { RegistrationBody } from 'src/authentication/dtos/RegistrationBody';
 export class PrismaProvider {
   private readonly prisma = new PrismaClient();
   //this group of methods is for determining the uniqueness of a user
-  private async getUserByUsername(receivedUsername: string): Promise<User> {
+  public async getUserByUsername(receivedUsername: string): Promise<User> {
     return await this.prisma.user.findUnique({
       where: { username: receivedUsername },
     });
@@ -20,8 +20,8 @@ export class PrismaProvider {
     receivedEmail: string,
     receivedUsername: string,
   ): Promise<boolean[]> {
-    const userByUsername: User = await this.getUserByUsername(receivedUsername);
     const userByEmail: User = await this.getUserByEmail(receivedEmail);
+    const userByUsername: User = await this.getUserByUsername(receivedUsername);
     const resultArr: boolean[] = [true, true];
     if (userByEmail !== null) resultArr[0] = false;
     if (userByUsername !== null) resultArr[1] = false;

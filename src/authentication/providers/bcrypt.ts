@@ -8,7 +8,7 @@ export class BcryptProvider {
   }
   public async hashPassword(password: string): Promise<string> {
     try {
-      const hashedPassword: string = bcrypt.hashSync(
+      const hashedPassword: string = this.bcrypt.hashSync(
         password,
         Number(process.env.SALT_ROUNDS),
       );
