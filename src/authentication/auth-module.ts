@@ -1,11 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import {
-  RegisterRateLimit,
-  SanitizeRegistrationBody,
-  ValidateRegistrationBody,
+  RateLimiter,
+  SanitizeBody,
+  ValidateBody,
   VerifyUserIsUnique,
-} from './middleware/registration';
-import { AuthenticationController } from './auth.controller';
+} from './middleware /registration';
+import { AuthenticationController } from './auth-controller';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { BcryptProvider } from './providers/bcrypt';
 
@@ -17,12 +17,7 @@ import { BcryptProvider } from './providers/bcrypt';
 export class AuthenticationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(
-        RegisterRateLimit,
-        ValidateRegistrationBody,
-        SanitizeRegistrationBody,
-        VerifyUserIsUnique,
-      )
+      .apply(RateLimiter, ValidateBody, SanitizeBody, VerifyUserIsUnique)
       .forRoutes('/api/auth/registration');
   }
 }
