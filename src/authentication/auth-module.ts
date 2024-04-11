@@ -17,6 +17,7 @@ import {
 } from './middleware /login';
 import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
+import { JwtProvider } from './providers/jwt';
 
 @Module({
   imports: [],
@@ -26,6 +27,7 @@ import { AuthenticationErrorHandler } from './providers/error';
     BcryptProvider,
     UserClass,
     AuthenticationErrorHandler,
+    JwtProvider,
   ],
 })
 export class AuthenticationModule implements NestModule {
