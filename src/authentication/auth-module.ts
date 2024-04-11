@@ -13,13 +13,20 @@ import {
   ValidateLoginBody,
   SanitizeLoginBody,
   ValidateUserExists,
+  ValidateUserPasswordIsCorrect,
 } from './middleware /login';
 import { UserClass } from './providers/login';
+import { AuthenticationErrorHandler } from './providers/error';
 
 @Module({
   imports: [],
   controllers: [AuthenticationController],
-  providers: [PrismaProvider, BcryptProvider, UserClass],
+  providers: [
+    PrismaProvider,
+    BcryptProvider,
+    UserClass,
+    AuthenticationErrorHandler,
+  ],
 })
 export class AuthenticationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
@@ -32,6 +39,7 @@ export class AuthenticationModule implements NestModule {
         ValidateLoginBody,
         SanitizeLoginBody,
         ValidateUserExists,
+        ValidateUserPasswordIsCorrect,
       )
       .forRoutes('/api/auth/login');
   }

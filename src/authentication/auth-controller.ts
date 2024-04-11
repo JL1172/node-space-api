@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { RegistrationBody } from './dtos/RegistrationBody';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { User } from '@prisma/client';
@@ -17,6 +17,7 @@ export class AuthenticationController {
     return 'New Account Successfully Created.';
   }
   @Post('/login')
+  @HttpCode(200)
   public async login(): Promise<string> {
     return 'successfully logged in';
   }

@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NestMiddleware,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import * as validator from 'validator';
 import * as rateLimit from 'express-rate-limit';
 import { NextFunction, Request, Response } from 'express';
@@ -11,15 +6,17 @@ import { plainToClass } from 'class-transformer';
 import { RegistrationBody } from '../dtos/RegistrationBody';
 import { validateOrReject } from 'class-validator';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
+import { AuthenticationErrorHandler } from '../providers/error';
 
 @Injectable()
 export class RateLimiter implements NestMiddleware {
+  constructor(private readonly errorHander: AuthenticationErrorHandler) {}
   private readonly limiter: rateLimit.RateLimitRequestHandler =
     rateLimit.rateLimit({
       windowMs: 1000 * 15 * 60,
       limit: 25,
       handler: () => {
-        throw new HttpException(
+        this.errorHander.reportHttpError(
           'Too Many Registration Attempts.',
           HttpStatus.TOO_MANY_REQUESTS,
         );
@@ -32,6 +29,7 @@ export class RateLimiter implements NestMiddleware {
 
 @Injectable()
 export class ValidateBody implements NestMiddleware {
+  constructor(private readonly errorHander: AuthenticationErrorHandler) {}
   async use(req: Request, res: Response, next: NextFunction) {
     const objectToProccess = plainToClass(RegistrationBody, req.body);
     try {
@@ -43,7 +41,10 @@ export class ValidateBody implements NestMiddleware {
     } catch (err) {
       const errObject = {};
       err.forEach((n) => (errObject[n.property] = n.constraints));
-      throw new HttpException(errObject, HttpStatus.UNPROCESSABLE_ENTITY);
+      this.errorHander.reportHttpError(
+        errObject,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
   }
 }
@@ -78,7 +79,10 @@ export class SanitizeBody implements NestMiddleware {
 
 @Injectable()
 export class VerifyUserIsUnique implements NestMiddleware {
-  constructor(private readonly prisma: PrismaProvider) {}
+  constructor(
+    private readonly prisma: PrismaProvider,
+    private readonly errorHander: AuthenticationErrorHandler,
+  ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
       const result: boolean[] = await this.prisma.isUserUnique(
@@ -93,11 +97,14 @@ export class VerifyUserIsUnique implements NestMiddleware {
               ? 'Email Already Associated With Another Account.'
               : 'Username Already Associated With Another Account.'
         }`;
-        throw new HttpException(errorMessage, HttpStatus.BAD_REQUEST);
+        this.errorHander.reportHttpError(errorMessage, HttpStatus.BAD_REQUEST);
       }
       next();
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      this.errorHander.reportHttpError(
+        /Already/i.test(err.message) ? err.message : 'Internal Server Error',
+        err.status ? err.status : HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

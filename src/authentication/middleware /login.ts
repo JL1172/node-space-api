@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NestMiddleware,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
 import * as ratelimit from 'express-rate-limit';
@@ -12,14 +7,18 @@ import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { UserClass } from '../providers/login';
+import { BcryptProvider } from '../providers/bcrypt';
+import { AuthenticationErrorHandler } from '../providers/error';
+import { SLEEP, Timing } from '../providers/delay';
 
 @Injectable()
 export class RateLimter implements NestMiddleware {
+  constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly limiter = ratelimit.rateLimit({
     windowMs: 1000 * 15 * 60,
-    limit: 10,
+    limit: 100,
     handler: () => {
-      throw new HttpException(
+      this.errorHandler.reportHttpError(
         'Too Many Login Requests.',
         HttpStatus.TOO_MANY_REQUESTS,
       );
@@ -32,6 +31,7 @@ export class RateLimter implements NestMiddleware {
 
 @Injectable()
 export class ValidateLoginBody implements NestMiddleware {
+  constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   async use(req: Request, res: Response, next: NextFunction) {
     const objectToProccess = plainToClass(LoginBody, req.body);
     try {
@@ -43,7 +43,10 @@ export class ValidateLoginBody implements NestMiddleware {
     } catch (err) {
       const errObject = {};
       err.forEach((n) => (errObject[n.property] = n.constraints));
-      throw new HttpException(errObject, HttpStatus.UNPROCESSABLE_ENTITY);
+      this.errorHandler.reportHttpError(
+        errObject,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
   }
 }
@@ -69,6 +72,7 @@ export class SanitizeLoginBody implements NestMiddleware {
 @Injectable()
 export class ValidateUserExists implements NestMiddleware {
   constructor(
+    private readonly errorHandler: AuthenticationErrorHandler,
     private readonly prisma: PrismaProvider,
     private readonly userClass: UserClass,
   ) {}
@@ -78,29 +82,54 @@ export class ValidateUserExists implements NestMiddleware {
         req.body.username,
       );
       if (isValidUser === null) {
-        throw new HttpException(
+        this.errorHandler.reportHttpError(
           'Username Or Password Is Incorrect.',
-          HttpStatus.UNPROCESSABLE_ENTITY,
+          HttpStatus.UNAUTHORIZED,
         );
       }
       this.userClass.setUser(isValidUser);
       next();
     } catch (err) {
-      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+      await Timing.delay(SLEEP.TWO);
+      this.errorHandler.reportHttpError(
+        err.message === 'Username Or Password Is Incorrect.'
+          ? err.message
+          : 'Internal Server Error.',
+        err.status ? err.status : HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
 
-/*need to do compare funciton
+/*need to do compare funciton*/
 @Injectable()
 export class ValidateUserPasswordIsCorrect implements NestMiddleware {
-  constructor(private readonly userClass: UserClass) {}
+  constructor(
+    private readonly userClass: UserClass,
+    private readonly errorHandler: AuthenticationErrorHandler,
+    private readonly bcrypt: BcryptProvider,
+  ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-        
+      const passwordToCompare: string = this.userClass.getUser().password;
+      const result: boolean = await this.bcrypt.comparePassword(
+        req.body.password,
+        passwordToCompare,
+      );
+      if (result === false) {
+        this.errorHandler.reportHttpError(
+          'Username Or Password Is Incorrect.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      next();
     } catch (err) {
-      throw new HttpException(err, HttpStatus.UNAUTHORIZED);
+      this.errorHandler.reportHttpError(
+        err.message === 'Username Or Password Is Incorrect.'
+          ? err.message
+          : 'Internal Server Error.',
+        err.status ? err.status : HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
-*/

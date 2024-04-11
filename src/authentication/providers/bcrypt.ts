@@ -20,4 +20,14 @@ export class BcryptProvider {
       this.packageError('An Unexpected Problem Occurred');
     }
   }
+  public async comparePassword(
+    receivedPassword: string,
+    expectedPassword: string,
+  ): Promise<boolean> {
+    try {
+      return this.bcrypt.compareSync(receivedPassword, expectedPassword);
+    } catch (err) {
+      this.packageError('An Unexpted Problem Occurred.');
+    }
+  }
 }
