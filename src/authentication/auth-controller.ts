@@ -1,10 +1,19 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { RegistrationBody } from './dtos/RegistrationBody';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { BcryptProvider } from './providers/bcrypt';
 import { JwtProvider } from './providers/jwt';
 import { UserClass } from './providers/login';
+import { Mailer } from './providers/email';
+import { AuthenticationErrorHandler } from './providers/error';
 
 @Controller('/api/auth')
 export class AuthenticationController {
@@ -13,6 +22,8 @@ export class AuthenticationController {
     private readonly bcrypt: BcryptProvider,
     private readonly jwt: JwtProvider,
     private readonly user: UserClass,
+    private readonly errorHandler: AuthenticationErrorHandler,
+    private readonly mailer: Mailer,
   ) {}
   @Post('/registration')
   public async register(@Body() body: RegistrationBody): Promise<string> {
@@ -27,8 +38,13 @@ export class AuthenticationController {
     return { token: this.jwt.getJwtToken() };
   }
   @Post('/change-password')
-  public changePassword(): void {
-    console.log('change password success.');
+  public async changePassword(): Promise<void> {
+    try {
+      //todo need to finish this
+      await this.mailer.draftEmail('mockemail');
+    } catch (err) {
+      this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
   @Get('/')
   public async getAll(): Promise<User[]> {

@@ -18,6 +18,7 @@ import {
 import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
 import { JwtProvider } from './providers/jwt';
+import { Mailer } from './providers/email';
 
 @Module({
   imports: [],
@@ -28,6 +29,7 @@ import { JwtProvider } from './providers/jwt';
     UserClass,
     AuthenticationErrorHandler,
     JwtProvider,
+    Mailer,
   ],
 })
 export class AuthenticationModule implements NestModule {
