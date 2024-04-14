@@ -40,6 +40,7 @@ export class AuthenticationController {
   @Post('/change-password')
   public async changePassword(): Promise<string> {
     try {
+      //todo see commit [e876b44] for direction on next steps.
       return 'Check Your Inbox For Your Verification Code.';
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
