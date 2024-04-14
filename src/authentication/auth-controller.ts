@@ -38,10 +38,9 @@ export class AuthenticationController {
     return { token: this.jwt.getJwtToken() };
   }
   @Post('/change-password')
-  public async changePassword(): Promise<void> {
+  public async changePassword(): Promise<string> {
     try {
-      //todo need to finish this
-      // await this.mailer.draftEmail('mockemail');
+      return 'Check Your Inbox For Your Verification Code.';
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
