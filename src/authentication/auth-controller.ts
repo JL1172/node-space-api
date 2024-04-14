@@ -41,7 +41,7 @@ export class AuthenticationController {
   public async changePassword(): Promise<void> {
     try {
       //todo need to finish this
-      await this.mailer.draftEmail('mockemail');
+      // await this.mailer.draftEmail('mockemail');
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

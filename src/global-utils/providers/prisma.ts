@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, User, VerificationCode } from '@prisma/client';
+import { VerificationCodeBodyToInsertIntoDb } from 'src/authentication/dtos/ChangePasswordBody';
 import { RegistrationBody } from 'src/authentication/dtos/RegistrationBody';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class PrismaProvider {
       where: { username: receivedUsername },
     });
   }
-  private async getUserByEmail(receivedEmail: string): Promise<User> {
+  public async getUserByEmail(receivedEmail: string): Promise<User> {
     return await this.prisma.user.findUnique({
       where: { email: receivedEmail },
     });
@@ -32,5 +33,17 @@ export class PrismaProvider {
   }
   public async createNewUser(user: RegistrationBody): Promise<void> {
     await this.prisma.user.create({ data: user });
+  }
+  public async storeVerificationCode(
+    dataToInsert: VerificationCodeBodyToInsertIntoDb,
+  ): Promise<void> {
+    await this.prisma.verificationCode.create({ data: dataToInsert });
+  }
+  public async getVerificationCode(
+    userEmail: string,
+  ): Promise<VerificationCode> {
+    return await this.prisma.verificationCode.findUnique({
+      where: { user_email: userEmail },
+    });
   }
 }

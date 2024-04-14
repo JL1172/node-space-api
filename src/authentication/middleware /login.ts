@@ -84,7 +84,7 @@ export class ValidateUserExists implements NestMiddleware {
       if (isValidUser === null) {
         this.errorHandler.reportHttpError(
           'Username Or Password Is Incorrect.',
-          HttpStatus.UNAUTHORIZED,
+          HttpStatus.FORBIDDEN,
         );
       }
       this.userClass.setUser(isValidUser);
@@ -119,7 +119,7 @@ export class ValidateUserPasswordIsCorrect implements NestMiddleware {
       if (result === false) {
         this.errorHandler.reportHttpError(
           'Username Or Password Is Incorrect.',
-          HttpStatus.UNAUTHORIZED,
+          HttpStatus.FORBIDDEN,
         );
       }
       next();

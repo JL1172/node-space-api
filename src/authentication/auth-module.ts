@@ -19,6 +19,14 @@ import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
 import { JwtProvider } from './providers/jwt';
 import { Mailer } from './providers/email';
+import {
+  ChangePasswordRateLimiter,
+  GenerateEmailWithVerificationCode,
+  SanitizeChangePasswordBody,
+  ValidateChangePasswordBody,
+  ValidateEmailExists,
+} from './middleware /change-password';
+import { RandomCodeGenerator } from './providers/random-code';
 
 @Module({
   imports: [],
@@ -30,6 +38,7 @@ import { Mailer } from './providers/email';
     AuthenticationErrorHandler,
     JwtProvider,
     Mailer,
+    RandomCodeGenerator,
   ],
 })
 export class AuthenticationModule implements NestModule {
@@ -46,5 +55,14 @@ export class AuthenticationModule implements NestModule {
         ValidateUserPasswordIsCorrect,
       )
       .forRoutes('/api/auth/login');
+    consumer
+      .apply(
+        ChangePasswordRateLimiter,
+        ValidateChangePasswordBody,
+        SanitizeChangePasswordBody,
+        ValidateEmailExists,
+        GenerateEmailWithVerificationCode,
+      )
+      .forRoutes('/api/auth/change-password');
   }
 }

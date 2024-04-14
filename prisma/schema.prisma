@@ -14,12 +14,24 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  created_at DateTime? @default(now())
-  email      String    @unique
-  username   String    @unique
-  password   String
-  first_name String
-  last_name  String
-  age        Int
+  id               Int                @id @default(autoincrement())
+  created_at       DateTime?          @default(now())
+  email            String             @unique
+  username         String             @unique
+  password         String
+  first_name       String
+  last_name        String
+  age              Int
+  VerificationCode VerificationCode[]
+}
+
+model VerificationCode {
+  id                Int       @id @default(autoincrement())
+  verification_code String
+  user_email        String    @unique
+  user              User      @relation(fields: [user_email], references: [email])
+  expiration_date   DateTime
+  created_at        DateTime? @default(now())
+
+  @@unique([verification_code, user_email])
 }

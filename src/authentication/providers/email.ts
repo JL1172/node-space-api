@@ -9,12 +9,16 @@ export class Mailer {
       pass: process.env.GMAIL_PASS,
     },
   });
-  public async draftEmail(email: string): Promise<void> {
+  public async draftEmail(
+    email: string,
+    subject: string,
+    text: string,
+  ): Promise<void> {
     const mailOptions = {
       from: process.env.GMAIL,
       to: email,
-      subject: 'hello world',
-      text: 'hello world',
+      subject: subject,
+      html: text,
     };
     return new Promise((resolve, reject) =>
       this.nodemailer.sendMail(mailOptions, (error: unknown) => {
