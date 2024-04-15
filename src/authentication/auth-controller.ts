@@ -46,6 +46,7 @@ export class AuthenticationController {
     }
   }
   @Post('/verify-code')
+  //TODO this is the next step: see commit [b9918d3] for instructions
   public verifyCode(): string {
     try {
       return 'hello wrold form verify code endpoint';
