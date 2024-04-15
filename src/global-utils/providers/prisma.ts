@@ -34,16 +34,35 @@ export class PrismaProvider {
   public async createNewUser(user: RegistrationBody): Promise<void> {
     await this.prisma.user.create({ data: user });
   }
-  public async storeVerificationCode(
-    dataToInsert: VerificationCodeBodyToInsertIntoDb,
-  ): Promise<void> {
-    await this.prisma.verificationCode.create({ data: dataToInsert });
-  }
-  public async getLastVerificationCode(
+  private async getLastVerificationCode(
     userEmail: string,
   ): Promise<VerificationCode> {
     return await this.prisma.verificationCode.findFirst({
       where: { user_email: userEmail, is_valid: true },
     });
+  }
+  private async updateLastVerificationCodeValidity(
+    id: number,
+    verificationCodeEntryUpdated: VerificationCode,
+  ): Promise<void> {
+    await this.prisma.verificationCode.update({
+      where: { id: id },
+      data: verificationCodeEntryUpdated,
+    });
+  }
+  public async storeVerificationCode(
+    dataToInsert: VerificationCodeBodyToInsertIntoDb,
+  ): Promise<void> {
+    const findLastVerificationCode = await this.getLastVerificationCode(
+      dataToInsert.user_email,
+    );
+    if (findLastVerificationCode !== null) {
+      findLastVerificationCode['is_valid'] = false;
+      await this.updateLastVerificationCodeValidity(
+        findLastVerificationCode.id,
+        findLastVerificationCode,
+      );
+    }
+    await this.prisma.verificationCode.create({ data: dataToInsert });
   }
 }
