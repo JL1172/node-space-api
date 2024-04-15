@@ -39,11 +39,11 @@ export class PrismaProvider {
   ): Promise<void> {
     await this.prisma.verificationCode.create({ data: dataToInsert });
   }
-  public async getVerificationCode(
+  public async getLastVerificationCode(
     userEmail: string,
   ): Promise<VerificationCode> {
-    return await this.prisma.verificationCode.findUnique({
-      where: { user_email: userEmail },
+    return await this.prisma.verificationCode.findFirst({
+      where: { user_email: userEmail, is_valid: true },
     });
   }
 }

@@ -7,16 +7,17 @@ import { ChangePasswordBody } from '../dtos/ChangePasswordBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
 import { RandomCodeGenerator } from '../providers/random-code';
-import { Mailer } from '../providers/email';
+import { EmailMarkup, Mailer } from '../providers/email';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { User } from '@prisma/client';
+import { UserEmailStorage } from '../providers/user-email';
 
 @Injectable()
 export class ChangePasswordRateLimiter implements NestMiddleware {
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly limiter = ratelimit.rateLimit({
     windowMs: 1000 * 60 * 15,
-    limit: 15,
+    limit: 5,
     handler: () => {
       this.errorHandler.reportHttpError(
         'Too Many Requests.',
@@ -56,14 +57,21 @@ export class SanitizeChangePasswordBody implements NestMiddleware {
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly validate = validator;
   use(req: Request, res: Response, next: NextFunction) {
-    req.body.email = this.validate.escape(req.body.email);
-    req.body.email = this.validate.trim(req.body.email);
-    req.body.email = this.validate.normalizeEmail(req.body.email);
-    req.body.email = this.validate.blacklist(
-      req.body.email,
-      /[\x00-\x1F\s;'"\\<>]/.source,
-    );
-    next();
+    try {
+      req.body.email = this.validate.escape(req.body.email);
+      req.body.email = this.validate.trim(req.body.email);
+      req.body.email = this.validate.normalizeEmail(req.body.email);
+      req.body.email = this.validate.blacklist(
+        req.body.email,
+        /[\x00-\x1F\s;'"\\<>]/.source,
+      );
+      next();
+    } catch (err) {
+      this.errorHandler.reportHttpError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
 @Injectable()
@@ -71,6 +79,7 @@ export class ValidateEmailExists implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
     private readonly prisma: PrismaProvider,
+    private readonly userStorage: UserEmailStorage,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
@@ -78,6 +87,7 @@ export class ValidateEmailExists implements NestMiddleware {
         req.body.email,
       );
       if (isValidUser !== null) {
+        this.userStorage.setUserEmail(isValidUser.email);
         next();
       } else {
         this.errorHandler.reportHttpError(
@@ -100,21 +110,20 @@ export class GenerateEmailWithVerificationCode implements NestMiddleware {
     private readonly generateVerificationCode: RandomCodeGenerator,
     private readonly prisma: PrismaProvider,
     private readonly mailer: Mailer,
+    private readonly userStorage: UserEmailStorage,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-      const userEmail: string = (
-        await this.prisma.getUserByEmail(req.body.email)
-      ).email;
+      const email: string = this.userStorage.getUserEmail();
       const random6DigitCode = this.generateVerificationCode.generateCode();
-      const emailContent = `<h5>Dear ${userEmail},</h5><p>Thank you for choosing our service! To complete your password change and ensure the security of your account, please use the following verification code:</p>Verification Code: <strong>${random6DigitCode}</strong><p>Please enter this code on our website/app within the next <em>5 Minutes</em> to change your password.</p><p>If you did not request this verification code, please ignore this email.</p><p>Thank you,</p><p>Node Space Team</p>`;
       await this.mailer.draftEmail(
-        userEmail,
+        email,
         'Verification Code For Password Change.',
-        emailContent,
+        EmailMarkup.PASSWORD_RESET,
+        random6DigitCode,
       );
       await this.prisma.storeVerificationCode({
-        user_email: userEmail,
+        user_email: email,
         expiration_date: this.generateVerificationCode.getExpirationDate(),
         verification_code: random6DigitCode,
       });

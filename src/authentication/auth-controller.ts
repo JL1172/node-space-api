@@ -38,10 +38,17 @@ export class AuthenticationController {
     return { token: this.jwt.getJwtToken() };
   }
   @Post('/change-password')
-  public async changePassword(): Promise<string> {
+  public changePassword(): string {
     try {
-      //todo see commit [e876b44] for direction on next steps.
       return 'Check Your Inbox For Your Verification Code.';
+    } catch (err) {
+      this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  @Post('/verify-code')
+  public verifyCode(): string {
+    try {
+      return 'hello wrold form verify code endpoint';
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

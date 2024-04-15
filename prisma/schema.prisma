@@ -28,10 +28,11 @@ model User {
 model VerificationCode {
   id                Int       @id @default(autoincrement())
   verification_code String
-  user_email        String    @unique
+  user_email        String    
   user              User      @relation(fields: [user_email], references: [email])
   expiration_date   DateTime
   created_at        DateTime? @default(now())
+  is_valid          Boolean?  @default(true)
 
-  @@unique([verification_code, user_email])
+  @@unique([is_valid, user_email])
 }

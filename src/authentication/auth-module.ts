@@ -27,6 +27,7 @@ import {
   ValidateEmailExists,
 } from './middleware /change-password';
 import { RandomCodeGenerator } from './providers/random-code';
+import { UserEmailStorage } from './providers/user-email';
 
 @Module({
   imports: [],
@@ -39,6 +40,7 @@ import { RandomCodeGenerator } from './providers/random-code';
     JwtProvider,
     Mailer,
     RandomCodeGenerator,
+    UserEmailStorage,
   ],
 })
 export class AuthenticationModule implements NestModule {
