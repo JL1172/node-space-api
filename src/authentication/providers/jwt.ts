@@ -9,13 +9,30 @@ export enum JWT_ROLE {
   RESET_PASSWORD = 'RESET_PASSWORD',
 }
 
+export class decodedTokenDto {
+  id: number;
+  username: string;
+  email: string;
+  jwt_role: JWT_ROLE;
+  full_name: string;
+  iat: number;
+  exp: number;
+}
+
 @Injectable()
 export class JwtProvider {
   private jwtToken: string;
   private readonly jwt = jwt;
+  private decodedJwt: decodedTokenDto;
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private setJwtToken(token: string): void {
     this.jwtToken = token;
+  }
+  private setDecodedJwtToken(decodedToken) {
+    this.decodedJwt = decodedToken;
+  }
+  public getDecodedJwtToken(): decodedTokenDto {
+    return this.decodedJwt;
   }
   public createJwtToken(
     user: User,
@@ -54,5 +71,23 @@ export class JwtProvider {
   }
   public getJwtToken(): string {
     return this.jwtToken;
+  }
+  public validateJwtToken(token: string): boolean {
+    this.jwt.verify(
+      token,
+      process.env.JWT_SECRET,
+      (err, decodedToken: decodedTokenDto) => {
+        if (err) {
+          throw new this.jwt.JsonWebTokenError('Error:', err);
+        } else {
+          this.setDecodedJwtToken(decodedToken);
+        }
+      },
+    );
+    return true;
+  }
+  public destroy(): void {
+    this.jwtToken = null;
+    this.decodedJwt = null;
   }
 }

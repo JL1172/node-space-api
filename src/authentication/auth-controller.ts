@@ -13,6 +13,7 @@ import { BcryptProvider } from './providers/bcrypt';
 import { JWT_ROLE, JwtProvider } from './providers/jwt';
 import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
+import { ResetPasswordBody } from './dtos/ResetPasswordBody';
 
 @Controller('/api/auth')
 export class AuthenticationController {
@@ -49,11 +50,7 @@ export class AuthenticationController {
   ): Promise<{ token: string; message: string }> {
     try {
       const userToInsert = await this.prisma.getUserByEmail(body.email);
-      this.jwt.createJwtToken(
-        userToInsert,
-        1000 * 60 * 5,
-        JWT_ROLE.RESET_PASSWORD,
-      );
+      this.jwt.createJwtToken(userToInsert, 5 * 60, JWT_ROLE.RESET_PASSWORD);
       const jwt = this.jwt.getJwtToken();
       return { token: jwt, message: 'Success.' };
     } catch (err) {
@@ -61,9 +58,28 @@ export class AuthenticationController {
     }
   }
   @Post('/reset-password')
-  public resetPassword(): string {
+  public async resetPassword(@Body() body: ResetPasswordBody): Promise<string> {
     try {
-      return 'hello world from reset password endpoint';
+      //grab decoded token
+      const decodedToken = this.jwt.getDecodedJwtToken();
+      //grab the token
+      const token = this.jwt.getJwtToken();
+      //find user with id
+      const user = await this.prisma.getUserWithId(decodedToken.id);
+      //update password
+      user.password = body.password;
+      //create object for token creation
+      const tokenToInsertIntoDb = {
+        token,
+        expiration_time: new Date(decodedToken.exp * 1000),
+      };
+      //create new token
+      await this.prisma.createNewJwtToken(tokenToInsertIntoDb);
+      //update user's password
+      await this.prisma.updateUserWithId(decodedToken.id, user);
+      //delete values
+      this.jwt.destroy();
+      return 'Password Successfully Updated.';
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

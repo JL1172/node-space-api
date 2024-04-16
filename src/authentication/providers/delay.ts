@@ -3,6 +3,7 @@ export enum SLEEP {
   ONE_FIFTY,
   TWO,
   TWO_FIFTY,
+  FIVE_SECONDS,
 }
 export class Timing {
   private static readonly sleep_times: Record<SLEEP, number> = {
@@ -10,6 +11,7 @@ export class Timing {
     [SLEEP.ONE_FIFTY]: 150,
     [SLEEP.TWO]: 200,
     [SLEEP.TWO_FIFTY]: 250,
+    [SLEEP.FIVE_SECONDS]: 5000,
   } as const;
   public static async delay(sleep_time: SLEEP): Promise<void> {
     return await new Promise((resolve) =>
@@ -22,5 +24,12 @@ export class Timing {
   ): Promise<void> {
     const randomNumber = Math.random() * upper + lower;
     return await new Promise((resolve) => setTimeout(resolve, randomNumber));
+  }
+  public static async timeoutDelay(sleep_time: SLEEP): Promise<void> {
+    return await new Promise((resolve, reject) =>
+      setTimeout(() => {
+        reject('Request Timeout');
+      }, this.sleep_times[sleep_time]),
+    );
   }
 }

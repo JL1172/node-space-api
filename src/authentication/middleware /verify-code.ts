@@ -114,7 +114,6 @@ export class ValidateVerificationCode implements NestMiddleware {
     try {
       const lastVerificationCode: VerificationCode =
         await this.prisma.getLastVerificationCode(req.body.email);
-      console.log(lastVerificationCode);
       //ensures there is a code and that it isnt false
       if (
         lastVerificationCode === null ||

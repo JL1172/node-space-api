@@ -6,6 +6,8 @@ import { plainToClass } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { ResetPasswordBody } from '../dtos/ResetPasswordBody';
 import * as validator from 'validator';
+import { JWT_ROLE, JwtProvider, decodedTokenDto } from '../providers/jwt';
+import { PrismaProvider } from 'src/global-utils/providers/prisma';
 
 @Injectable()
 export class ResetPasswordRateLimiter implements NestMiddleware {
@@ -36,10 +38,26 @@ export class ValidateResetPasswordBody implements NestMiddleware {
         whitelist: true,
         forbidNonWhitelisted: true,
       });
+      if (req.body.password !== req.body.confirmedPassword) {
+        this.errorHander.reportHttpError(
+          'Passwords Must Match.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       next();
     } catch (err) {
       const errObject = {};
       err.forEach((n) => (errObject[n.property] = n.constraints));
+      if (req.body.password !== req.body.confirmedPassword) {
+        errObject['password'] = {
+          ...errObject['password'],
+          doNotMatch: 'Passwords Must Match.',
+        };
+        errObject['confirmedPassword'] = {
+          ...errObject['confirmedPassword'],
+          doNotMatch: 'Passwords Must Match.',
+        };
+      }
       this.errorHander.reportHttpError(
         errObject,
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -49,20 +67,21 @@ export class ValidateResetPasswordBody implements NestMiddleware {
 }
 
 @Injectable()
-export class ValidatePasswordsMatch implements NestMiddleware {
+export class ValidateResetPasswordHeaders implements NestMiddleware {
   constructor(private readonly errorHander: AuthenticationErrorHandler) {}
   use(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.body.password !== req.body.confirmedPassword) {
+      const token = req.headers['authorization'];
+      if (token === null) {
         this.errorHander.reportHttpError(
-          'Passwords Must Match.',
+          'Token Is Required.',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
       next();
     } catch (err) {
       this.errorHander.reportHttpError(
-        err,
+        err.message,
         (err.status && err.status) || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -76,7 +95,7 @@ export class SanitizeResetPasswordBody implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     try {
       const body: ResetPasswordBody = req.body;
-      const keys: string[] = ['token', 'password', 'confirmedPassword'];
+      const keys: string[] = ['password', 'confirmedPassword'];
       keys.forEach((n: string) => {
         body[n] = this.validator.escape(body[n]);
         body[n] = this.validator.trim(body[n]);
@@ -88,6 +107,63 @@ export class SanitizeResetPasswordBody implements NestMiddleware {
       next();
     } catch (err) {
       this.errorHander.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+}
+
+@Injectable()
+export class ValidateTokenIsNotBlacklisted implements NestMiddleware {
+  constructor(
+    private readonly prisma: PrismaProvider,
+    private readonly errorHander: AuthenticationErrorHandler,
+  ) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    try {
+      const token = await this.prisma.getJwtByToken(
+        req.headers['authorization'],
+      );
+      if (token !== null) {
+        this.errorHander.reportHttpError(
+          'Invalid Token [403].',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      next();
+    } catch (err) {
+      this.errorHander.reportHttpError(
+        err.message || err,
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
+
+//next thing authorize jwt token
+@Injectable()
+export class ValidateJwtToken implements NestMiddleware {
+  constructor(
+    private readonly errorHander: AuthenticationErrorHandler,
+    private readonly jwt: JwtProvider,
+  ) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    try {
+      const token = req.headers['authorization'];
+      const result: boolean = this.jwt.validateJwtToken(token);
+      const decodedToken: decodedTokenDto = this.jwt.getDecodedJwtToken();
+      if (decodedToken.jwt_role !== JWT_ROLE.RESET_PASSWORD) {
+        this.errorHander.reportHttpError(
+          'Invalid Token Type.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      if (result === true) {
+        next();
+      }
+    } catch (err) {
+      this.errorHander.reportHttpError(
+        err,
+        err.status ? err.status : HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

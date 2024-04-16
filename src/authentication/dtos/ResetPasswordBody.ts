@@ -1,8 +1,6 @@
 import { IsNotEmpty, IsStrongPassword } from 'class-validator';
 
 export class ResetPasswordBody {
-  @IsNotEmpty({ message: 'Token Required.' })
-  token: string;
   @IsStrongPassword(
     { minLength: 8 },
     {
@@ -19,4 +17,9 @@ export class ResetPasswordBody {
     },
   )
   confirmedPassword: string;
+}
+
+export class ResetPasswordHeaders {
+  @IsNotEmpty({ message: 'Token Required.' })
+  token: string;
 }

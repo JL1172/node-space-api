@@ -38,8 +38,10 @@ import {
 import {
   ResetPasswordRateLimiter,
   SanitizeResetPasswordBody,
-  ValidatePasswordsMatch,
+  ValidateJwtToken,
   ValidateResetPasswordBody,
+  ValidateResetPasswordHeaders,
+  ValidateTokenIsNotBlacklisted,
 } from './middleware /reset-password';
 
 @Module({
@@ -92,8 +94,10 @@ export class AuthenticationModule implements NestModule {
       .apply(
         ResetPasswordRateLimiter,
         ValidateResetPasswordBody,
-        ValidatePasswordsMatch,
+        ValidateResetPasswordHeaders,
         SanitizeResetPasswordBody,
+        ValidateTokenIsNotBlacklisted,
+        ValidateJwtToken,
       )
       .forRoutes('/api/auth/reset-password');
   }
