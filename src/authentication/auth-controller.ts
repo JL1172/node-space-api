@@ -60,6 +60,14 @@ export class AuthenticationController {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  @Post('/reset-password')
+  public resetPassword(): string {
+    try {
+      return 'hello world from reset password endpoint';
+    } catch (err) {
+      this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   @Get('/')
   public async getAll(): Promise<User[]> {
     return await this.prisma.getAllUsers();

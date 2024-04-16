@@ -35,6 +35,12 @@ import {
   ValidateVerificationCodeBody,
   VerifyCodeRateLimit,
 } from './middleware /verify-code';
+import {
+  ResetPasswordRateLimiter,
+  SanitizeResetPasswordBody,
+  ValidatePasswordsMatch,
+  ValidateResetPasswordBody,
+} from './middleware /reset-password';
 
 @Module({
   imports: [],
@@ -82,5 +88,13 @@ export class AuthenticationModule implements NestModule {
         ValidateVerificationCode,
       )
       .forRoutes('/api/auth/verify-code');
+    consumer
+      .apply(
+        ResetPasswordRateLimiter,
+        ValidateResetPasswordBody,
+        ValidatePasswordsMatch,
+        SanitizeResetPasswordBody,
+      )
+      .forRoutes('/api/auth/reset-password');
   }
 }

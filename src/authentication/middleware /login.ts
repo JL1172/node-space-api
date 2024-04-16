@@ -16,7 +16,7 @@ export class RateLimter implements NestMiddleware {
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly limiter = ratelimit.rateLimit({
     windowMs: 1000 * 15 * 60,
-    limit: 100,
+    limit: 10,
     handler: () => {
       this.errorHandler.reportHttpError(
         'Too Many Login Requests.',
