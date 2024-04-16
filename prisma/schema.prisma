@@ -36,3 +36,10 @@ model VerificationCode {
 
   @@unique([user_email, verification_code])
 }
+
+model JwtToken {
+  id              Int       @id @default(autoincrement())
+  token           String    @unique
+  expiration_time DateTime
+  created_at      DateTime? @default(now())
+}

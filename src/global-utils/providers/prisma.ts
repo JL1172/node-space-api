@@ -34,14 +34,14 @@ export class PrismaProvider {
   public async createNewUser(user: RegistrationBody): Promise<void> {
     await this.prisma.user.create({ data: user });
   }
-  private async getLastVerificationCode(
+  public async getLastVerificationCode(
     userEmail: string,
   ): Promise<VerificationCode> {
     return await this.prisma.verificationCode.findFirst({
       where: { user_email: userEmail, is_valid: true },
     });
   }
-  private async updateLastVerificationCodeValidity(
+  public async updateLastVerificationCodeValidity(
     id: number,
     verificationCodeEntryUpdated: VerificationCode,
   ): Promise<void> {

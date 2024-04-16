@@ -3,6 +3,12 @@ import * as jwt from 'jsonwebtoken';
 import { User } from '@prisma/client';
 import 'dotenv/config';
 import { AuthenticationErrorHandler } from './error';
+
+export enum JWT_ROLE {
+  LOGIN = 'LOGIN',
+  RESET_PASSWORD = 'RESET_PASSWORD',
+}
+
 @Injectable()
 export class JwtProvider {
   private jwtToken: string;
@@ -11,10 +17,15 @@ export class JwtProvider {
   private setJwtToken(token: string): void {
     this.jwtToken = token;
   }
-  public createJwtToken(user: User): void {
+  public createJwtToken(
+    user: User,
+    expiration: string | number = '1d',
+    jwt_role: JWT_ROLE = JWT_ROLE.LOGIN,
+  ): void {
     try {
       const payload: {
         id: number;
+        jwt_role: JWT_ROLE;
         username: string;
         email: string;
         full_name: string;
@@ -22,10 +33,11 @@ export class JwtProvider {
         id: user.id,
         username: user.username,
         email: user.email,
+        jwt_role: jwt_role,
         full_name: user.first_name + user.last_name,
       };
-      const options: { expiresIn: string } = {
-        expiresIn: '1d',
+      const options: { expiresIn: string | number } = {
+        expiresIn: expiration,
       };
       const signedJwt = this.jwt.sign(
         payload,

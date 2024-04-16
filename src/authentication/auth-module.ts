@@ -31,6 +31,7 @@ import { UserEmailStorage } from './providers/user-email';
 import {
   SanitizeVerificationCodeBody,
   ValidateEmailExistsVerificationCode,
+  ValidateVerificationCode,
   ValidateVerificationCodeBody,
   VerifyCodeRateLimit,
 } from './middleware /verify-code';
@@ -78,6 +79,7 @@ export class AuthenticationModule implements NestModule {
         ValidateVerificationCodeBody,
         SanitizeVerificationCodeBody,
         ValidateEmailExistsVerificationCode,
+        ValidateVerificationCode,
       )
       .forRoutes('/api/auth/verify-code');
   }

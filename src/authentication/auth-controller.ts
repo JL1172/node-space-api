@@ -10,9 +10,8 @@ import { RegistrationBody } from './dtos/RegistrationBody';
 import { PrismaProvider } from 'src/global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { BcryptProvider } from './providers/bcrypt';
-import { JwtProvider } from './providers/jwt';
+import { JWT_ROLE, JwtProvider } from './providers/jwt';
 import { UserClass } from './providers/login';
-import { Mailer } from './providers/email';
 import { AuthenticationErrorHandler } from './providers/error';
 
 @Controller('/api/auth')
@@ -23,7 +22,6 @@ export class AuthenticationController {
     private readonly jwt: JwtProvider,
     private readonly user: UserClass,
     private readonly errorHandler: AuthenticationErrorHandler,
-    private readonly mailer: Mailer,
   ) {}
   @Post('/registration')
   public async register(@Body() body: RegistrationBody): Promise<string> {
@@ -46,10 +44,18 @@ export class AuthenticationController {
     }
   }
   @Post('/verify-code')
-  //TODO this is the next step: see commit [b9918d3] for instructions
-  public verifyCode(): string {
+  public async verifyCode(
+    @Body() body: User,
+  ): Promise<{ token: string; message: string }> {
     try {
-      return 'hello world form verify code endpoint';
+      const userToInsert = await this.prisma.getUserByEmail(body.email);
+      this.jwt.createJwtToken(
+        userToInsert,
+        1000 * 60 * 5,
+        JWT_ROLE.RESET_PASSWORD,
+      );
+      const jwt = this.jwt.getJwtToken();
+      return { token: jwt, message: 'Success.' };
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
