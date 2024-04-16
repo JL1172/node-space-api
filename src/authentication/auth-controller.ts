@@ -49,7 +49,7 @@ export class AuthenticationController {
   //TODO this is the next step: see commit [b9918d3] for instructions
   public verifyCode(): string {
     try {
-      return 'hello wrold form verify code endpoint';
+      return 'hello world form verify code endpoint';
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

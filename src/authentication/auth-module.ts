@@ -28,6 +28,12 @@ import {
 } from './middleware /change-password';
 import { RandomCodeGenerator } from './providers/random-code';
 import { UserEmailStorage } from './providers/user-email';
+import {
+  SanitizeVerificationCodeBody,
+  ValidateEmailExistsVerificationCode,
+  ValidateVerificationCodeBody,
+  VerifyCodeRateLimit,
+} from './middleware /verify-code';
 
 @Module({
   imports: [],
@@ -66,5 +72,13 @@ export class AuthenticationModule implements NestModule {
         GenerateEmailWithVerificationCode,
       )
       .forRoutes('/api/auth/change-password');
+    consumer
+      .apply(
+        VerifyCodeRateLimit,
+        ValidateVerificationCodeBody,
+        SanitizeVerificationCodeBody,
+        ValidateEmailExistsVerificationCode,
+      )
+      .forRoutes('/api/auth/verify-code');
   }
 }

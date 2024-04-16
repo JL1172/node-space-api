@@ -1,0 +1,104 @@
+import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
+import * as ratelimit from 'express-rate-limit';
+import { AuthenticationErrorHandler } from '../providers/error';
+import { plainToClass } from 'class-transformer';
+import { VerificationCodeBody } from '../dtos/VerificationCodeBody';
+import { validateOrReject } from 'class-validator';
+import * as validator from 'validator';
+import { PrismaProvider } from 'src/global-utils/providers/prisma';
+
+@Injectable()
+export class VerifyCodeRateLimit implements NestMiddleware {
+  constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
+  private readonly limiter = ratelimit.rateLimit({
+    windowMs: 1000 * 15 * 60,
+    limit: 10,
+    handler: () => {
+      this.errorHandler.reportHttpError(
+        'Too Many Requests.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    },
+  });
+  use(req: Request, res: Response, next: NextFunction) {
+    this.limiter(req, res, next);
+  }
+}
+
+@Injectable()
+export class ValidateVerificationCodeBody implements NestMiddleware {
+  constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    const objectToValidate = plainToClass(VerificationCodeBody, req.body);
+    try {
+      await validateOrReject(objectToValidate, {
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      });
+      next();
+    } catch (err) {
+      const errObject = {};
+      err.forEach((n) => (errObject[n.property] = n.constraints));
+      this.errorHandler.reportHttpError(
+        errObject,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+  }
+}
+
+@Injectable()
+export class SanitizeVerificationCodeBody implements NestMiddleware {
+  private readonly validate = validator;
+  constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
+  use(req: Request, res: Response, next: NextFunction) {
+    try {
+      const keys: string[] = ['email', 'verification_code'];
+      keys.forEach((n) => {
+        req.body[n] = this.validate.escape(req.body[n]);
+        req.body[n] = this.validate.trim(req.body[n]);
+        req.body[n] = this.validate.blacklist(
+          req.body[n],
+          /[\x00-\x1F\s;'"\\<>]/.source,
+        );
+      });
+      req.body.email = this.validate.normalizeEmail(req.body.email);
+      next();
+    } catch (err) {
+      this.errorHandler.reportHttpError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
+
+@Injectable()
+export class ValidateEmailExistsVerificationCode implements NestMiddleware {
+  constructor(
+    private readonly errorHandler: AuthenticationErrorHandler,
+    private readonly prisma: PrismaProvider,
+  ) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userEmail = await this.prisma.getUserByEmail(req.body.email);
+      if (userEmail === null) {
+        this.errorHandler.reportHttpError(
+          'Account Not Found. Restart Process.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        next();
+      }
+    } catch (err) {
+      const message =
+        err.message === 'Account Not Found. Restart Process.'
+          ? err.message
+          : 'Internal Server Error.';
+      const status =
+        err.status === 400 ? err.status : HttpStatus.INTERNAL_SERVER_ERROR;
+      this.errorHandler.reportHttpError(message, status);
+    }
+  }
+}
