@@ -43,6 +43,7 @@ import {
   ValidateResetPasswordHeaders,
   ValidateTokenIsNotBlacklisted,
 } from './middleware /reset-password';
+import { SingletonPrismaProvider } from '../global-utils/providers/singleton-prisma';
 
 @Module({
   imports: [],
@@ -56,6 +57,7 @@ import {
     Mailer,
     RandomCodeGenerator,
     UserEmailStorage,
+    SingletonPrismaProvider,
   ],
 })
 export class AuthenticationModule implements NestModule {

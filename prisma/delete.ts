@@ -8,6 +8,6 @@ export async function resetDb() {
   await prisma.$executeRaw`ALTER SEQUENCE "VerificationCode_id_seq" RESTART WITH 1`;
   await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1`;
   await prisma.$executeRaw`ALTER SEQUENCE "JwtToken_id_seq" RESTART WITH 1`;
-  prisma.$disconnect;
+  prisma.$disconnect();
 }
 resetDb();

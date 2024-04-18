@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { JwtToken, PrismaClient, User, VerificationCode } from '@prisma/client';
 import { VerificationCodeBodyToInsertIntoDb } from 'src/authentication/dtos/ChangePasswordBody';
 import { RegistrationBody } from 'src/authentication/dtos/RegistrationBody';
+import { SingletonPrismaProvider } from './singleton-prisma';
 
 @Injectable()
 export class PrismaProvider {
-  private readonly prisma = new PrismaClient();
+  private readonly prisma: PrismaClient;
+  constructor() {
+    this.prisma = SingletonPrismaProvider.prisma_instance;
+  }
   //this group of methods is for determining the uniqueness of a user
   public async getUserByUsername(receivedUsername: string): Promise<User> {
     return await this.prisma.user.findUnique({
@@ -18,7 +22,9 @@ export class PrismaProvider {
     });
   }
   public async getJwtByToken(token: string): Promise<JwtToken> {
-    return await this.prisma.jwtToken.findUnique({ where: { token: token } });
+    return await this.prisma.jwtToken.findUnique({
+      where: { token: token },
+    });
   }
   public async isUserUnique(
     receivedEmail: string,
@@ -35,10 +41,15 @@ export class PrismaProvider {
     return await this.prisma.user.findMany();
   }
   public async updateUserWithId(id: number, updatedUser: User): Promise<void> {
-    await this.prisma.user.update({ where: { id: id }, data: updatedUser });
+    await this.prisma.user.update({
+      where: { id: id },
+      data: updatedUser,
+    });
   }
   public async getUserWithId(id: number): Promise<User> {
-    return await this.prisma.user.findUnique({ where: { id: id } });
+    return await this.prisma.user.findUnique({
+      where: { id: id },
+    });
   }
   public async createNewUser(user: RegistrationBody): Promise<void> {
     await this.prisma.user.create({ data: user });
@@ -78,6 +89,11 @@ export class PrismaProvider {
         findLastVerificationCode,
       );
     }
-    await this.prisma.verificationCode.create({ data: dataToInsert });
+    await this.prisma.verificationCode.create({
+      data: dataToInsert,
+    });
+  }
+  public async disconnect(): Promise<void> {
+    await this.prisma.$disconnect();
   }
 }
