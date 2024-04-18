@@ -1,13 +1,6 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { RegistrationBody } from './dtos/RegistrationBody';
-import { PrismaProvider } from 'src/global-utils/providers/prisma';
+import { PrismaProvider } from '../global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { BcryptProvider } from './providers/bcrypt';
 import { JWT_ROLE, JwtProvider } from './providers/jwt';
@@ -83,9 +76,5 @@ export class AuthenticationController {
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-  @Get('/')
-  public async getAll(): Promise<User[]> {
-    return await this.prisma.getAllUsers();
   }
 }

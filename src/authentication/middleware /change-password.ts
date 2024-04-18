@@ -8,7 +8,7 @@ import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
 import { RandomCodeGenerator } from '../providers/random-code';
 import { EmailMarkup, Mailer } from '../providers/email';
-import { PrismaProvider } from 'src/global-utils/providers/prisma';
+import { PrismaProvider } from '../../global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { UserEmailStorage } from '../providers/user-email';
 

@@ -6,7 +6,7 @@ import {
   VerifyUserIsUnique,
 } from './middleware /registration';
 import { AuthenticationController } from './auth-controller';
-import { PrismaProvider } from 'src/global-utils/providers/prisma';
+import { PrismaProvider } from '../global-utils/providers/prisma';
 import { BcryptProvider } from './providers/bcrypt';
 import {
   RateLimter,
