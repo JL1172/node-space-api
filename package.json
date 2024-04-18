@@ -72,6 +72,7 @@
       "json",
       "ts"
     ],
+    "verbose":true,
     "rootDir": "src",
     "testRegex": ".*\\.test\\.ts$",
     "transform": {
@@ -82,10 +83,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
-    "clearMocks": true,
-    "moduleDirectories": [
-      "node_modules",
-      "src"
-    ]
+    "clearMocks": true
   }
 }
