@@ -60,4 +60,43 @@ describe('Register Endpoint /api/auth/registration', () => {
       },
     });
   });
+  test('[3] Successfully throws error for incorrect types inputted as request body.', async () => {
+    const incorrectJsonInput: Record<
+      string,
+      string | boolean | number | Record<string, string>
+    > = {
+      age: 'hello world',
+      email: 1,
+      first_name: 34,
+      last_name: true,
+      password: 0,
+      username: {},
+    };
+    const res: request.Response = await request(app.getHttpServer())
+      .post(registration_url)
+      .send(incorrectJsonInput);
+    expect(res.body).toMatchObject({
+      age: { isNumberString: 'Age Must Be A Number.' },
+      email: { isEmail: 'Valid Email Required.' },
+      first_name: {
+        isString: 'First Name Must Be A String.',
+        matches: 'Must Only Consist Of Letters.',
+      },
+      last_name: {
+        isString: 'Last Name Must Be A String.',
+        matches: 'Must Only Consist Of Letters.',
+      },
+      password: {
+        isStrongPassword:
+          'Must Be A Strong Password, Fullfilling Each Of The Following Requirements: Min length of 8, 1 special char, 1 lowercase case, 1 uppercase, 1 number.',
+      },
+      username: {
+        isString: 'Username Must Be String.',
+        matches: 'Username Must Consist Of Numbers And Letters.',
+      },
+    });
+  });
+  test('[4] Successfully throws error for password and email.', async () => {
+    const res: request.Response = await request(app.getHttpServer());
+  });
 });
