@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
+import { resetDb } from '../../prisma/delete';
 
 describe('Register Endpoint /api/auth/registration', () => {
   let app: INestApplication;
@@ -96,7 +97,91 @@ describe('Register Endpoint /api/auth/registration', () => {
       },
     });
   });
-  test('[4] Successfully throws error for password and email.', async () => {
-    const res: request.Response = await request(app.getHttpServer());
+  test('[4] Successfully throws content error for password, last_name, first_name, email, and username.', async () => {
+    const incorrectJsonInput: Record<
+      string,
+      string | boolean | number | Record<string, string>
+    > = {
+      age: '22',
+      email: 'jacoblang',
+      first_name: 'jacob1',
+      last_name: 'lang1',
+      password: 'helloWorld',
+      username: 'jacoblang',
+    };
+    const res: request.Response = await request(app.getHttpServer())
+      .post(registration_url)
+      .send(incorrectJsonInput);
+    expect(res.body).toMatchObject({
+      email: { isEmail: 'Valid Email Required.' },
+      first_name: {
+        matches: 'Must Only Consist Of Letters.',
+      },
+      last_name: {
+        matches: 'Must Only Consist Of Letters.',
+      },
+      password: {
+        isStrongPassword:
+          'Must Be A Strong Password, Fullfilling Each Of The Following Requirements: Min length of 8, 1 special char, 1 lowercase case, 1 uppercase, 1 number.',
+      },
+      username: {
+        matches: 'Username Must Consist Of Numbers And Letters.',
+      },
+    });
+  });
+  test('[5] Successfully throws rate limit error.', async () => {
+    const ratelimit = 24;
+    for (let i = 0; i <= ratelimit; i++) {
+      await request(app.getHttpServer()).post(registration_url).send();
+    }
+    const res = await request(app.getHttpServer())
+      .post(registration_url)
+      .send();
+    expect(res.body).toMatchObject({
+      message: 'Too Many Registration Attempts.',
+    });
+    expect(res.status).toBe(429);
+  });
+  test('[6] Succesfully throws error if a user with the same username or email tries to register more than once.', async () => {
+    await resetDb();
+    const jsonInput: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+      age: '22',
+      first_name: 'jacob',
+      last_name: 'lang',
+      email: 'jacoblang127@gmail.com',
+    };
+    const res = await request(app.getHttpServer())
+      .post(registration_url)
+      .send(jsonInput);
+    expect(Object.keys(res.body)).toHaveLength(0);
+    const response = await request(app.getHttpServer())
+      .post(registration_url)
+      .send(jsonInput);
+    expect(response.body).toMatchObject({
+      message:
+        'Username and Email Already Associated With A Different Account.',
+      statusCode: 400,
+    });
+    ['message', 'statusCode'].forEach((n) =>
+      expect(response.body).toHaveProperty(n),
+    );
+  });
+  test('[7] Successfully creates a user with no errors.', async () => {
+    await resetDb();
+    const jsonInput: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+      age: '22',
+      first_name: 'jacob',
+      last_name: 'lang',
+      email: 'jacoblang127@gmail.com',
+    };
+    const res = await request(app.getHttpServer())
+      .post(registration_url)
+      .send(jsonInput);
+    expect(res.status).toBe(201);
+    expect(Object.keys(res.body)).toHaveLength(0);
   });
 });
