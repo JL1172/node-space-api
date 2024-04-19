@@ -3,6 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import { resetDb } from '../../prisma/delete';
+import { PrismaProvider } from '../global-utils/providers/prisma';
+import { VerificationCode } from '@prisma/client';
 
 describe('Register Endpoint /api/auth/registration', () => {
   let app: INestApplication;
@@ -352,5 +354,33 @@ describe('Full Password Reset Tests: [3 Endpoints Make Up This Process.]', () =>
         'Check Your Inbox For Your Verification Code.',
       );
     });
+    test('[19] Successfully validates the email verification code exists in the Database.', async () => {
+      const email: string = 'jacoblang127@gmail.com';
+      const prisma: PrismaProvider = new PrismaProvider();
+      const res = await request(app.getHttpServer()) //eslint-disable-line
+        .post(change_password_url)
+        .send({ email: email });
+      const lastCode: VerificationCode =
+        await prisma.getLastVerificationCode(email);
+      console.log(lastCode);
+      expect(lastCode).not.toBeNull();
+      //todo write the rest of the tests
+    });
+    test.todo(
+      'Successfully converts last generated and stored input`is_valid` field in `VerficatioCode` table to false and then only allows one valid verification code.',
+    );
+  });
+  describe('[2 of 3] Verify Code Endpoint /api/auth/verify-code', () => {
+    test.todo('Throws Ratelimit error');
+    test.todo('Throws error for empty request body.');
+    test.todo('Throws error for incorrect or invalid email.');
+    test.todo(
+      'Throws error for non existing code or code that has been previously invalidated (the first error in the middleware).',
+    );
+    test.todo(
+      'Throws error for if the code is expired. but is not marked as expired. successfully updates the field in the table and invalidates code.',
+    );
+    test.todo('throws error for invalid code.');
+    test.todo('successfully returns jwt token.');
   });
 });

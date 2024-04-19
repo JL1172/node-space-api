@@ -81,6 +81,7 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "timeout": 20000,
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "clearMocks": true
