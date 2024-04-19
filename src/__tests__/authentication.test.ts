@@ -196,11 +196,11 @@ describe('Login Endpoint /api/auth/login', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
   });
-  test('[1] Successfully returns 422 status code for empty login attempt.', async () => {
+  test('[8] Successfully returns 422 status code for empty login attempt.', async () => {
     const res = await request(app.getHttpServer()).post(login_url).send();
     expect(res.status).toBe(422);
   });
-  test('[2] Successfully throws "too many requests" error for exceeded rate limit.', async () => {
+  test('[9] Successfully throws "too many requests" error for exceeded rate limit.', async () => {
     const ratelimit = 10;
     for (let i = 0; i < ratelimit; i++) {
       const res = await request(app.getHttpServer()).post(login_url).send();
@@ -211,7 +211,7 @@ describe('Login Endpoint /api/auth/login', () => {
     const res = await request(app.getHttpServer()).post(login_url).send();
     expect(res.body).toMatchObject({ message: 'Too Many Login Requests.' });
   });
-  test('[3] Successfully throws error for empty login attempt', async () => {
+  test('[10] Successfully throws error for empty login attempt', async () => {
     const res = await request(app.getHttpServer()).post(login_url).send();
     expect(res.body).toMatchObject({
       password: {
@@ -224,7 +224,7 @@ describe('Login Endpoint /api/auth/login', () => {
       },
     });
   });
-  test('[4] Successfully throws error for incorrect credentials. [username]', async () => {
+  test('[11] Successfully throws error for incorrect credentials. [username]', async () => {
     const res = await request(app.getHttpServer())
       .post(login_url)
       .send({ username: 'jacoblang1', password: 'helloWorld?11' });
@@ -232,7 +232,7 @@ describe('Login Endpoint /api/auth/login', () => {
       message: 'Username Or Password Is Incorrect.',
     });
   });
-  test('[5] Incorrect login attempts consistently fall within a threshold of 50ms with one another regardless of what is incorrect (username or password).', async () => {
+  test('[12] Incorrect login attempts consistently fall within a threshold of 50ms with one another regardless of what is incorrect (username or password).', async () => {
     const threshold: number = 50;
     const startTimeForIncorrectUsername = performance.now();
     await request(app.getHttpServer())
@@ -253,7 +253,7 @@ describe('Login Endpoint /api/auth/login', () => {
     );
     expect(difference).toBeLessThanOrEqual(threshold);
   });
-  test('[6] Successfully logs in given correct credentials and returns JWT token.', async () => {
+  test('[13] Successfully logs in given correct credentials and returns JWT token.', async () => {
     const correctCredentials = {
       username: 'jacoblang11',
       password: 'helloWorld?11',
@@ -262,5 +262,95 @@ describe('Login Endpoint /api/auth/login', () => {
       .post(login_url)
       .send(correctCredentials);
     expect(res.body).toHaveProperty('token');
+  });
+});
+describe('Full Password Reset Tests: [3 Endpoints Make Up This Process.]', () => {
+  describe('[1 of 3] Change Password Endpoint /api/auth/change-password', () => {
+    let app: INestApplication;
+    beforeEach(async () => {
+      const moduleFixture: TestingModule = await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
+
+      app = moduleFixture.createNestApplication();
+      await app.init();
+    });
+    const change_password_url = '/api/auth/change-password';
+    test('[14] Successfully returns status code 422 for empty post request.', async () => {
+      const res = await request(app.getHttpServer())
+        .post(change_password_url)
+        .send();
+      expect(res.status).toBe(422);
+    });
+    test('[15] Successfully throws error for incorrect request body.', async () => {
+      const exectedErrors = [
+        {
+          email: {
+            isEmail: 'Must Be A Valid Email.',
+            isNotEmpty: 'Email Is Required.',
+          },
+        },
+        {
+          email: {
+            isEmail: 'Must Be A Valid Email.',
+          },
+        },
+      ];
+      const payloads = ['', { email: 'jacoblang' }];
+      for (let i = 0; i < payloads.length; i++) {
+        const res = await request(app.getHttpServer())
+          .post(change_password_url)
+          .send(payloads[i]);
+        expect(res.body).toMatchObject(exectedErrors[i]);
+      }
+    });
+    test('[16] Successfully throws 429 code and error message for rate limit.', async () => {
+      let ratelimit = 5;
+      while (ratelimit > 0) {
+        const res = await request(app.getHttpServer())
+          .post(change_password_url)
+          .send();
+        expect(res.body).toMatchObject({
+          email: {
+            isEmail: 'Must Be A Valid Email.',
+            isNotEmpty: 'Email Is Required.',
+          },
+        });
+        ratelimit--;
+      }
+      const res = await request(app.getHttpServer())
+        .post(change_password_url)
+        .send();
+      expect(res.status).toBe(429);
+      expect(res.body).toMatchObject({ message: 'Too Many Requests.' });
+    });
+    test('[17] Successfully throws error if user does not exist.', async () => {
+      const creds = { email: 'jacoblang72@comcast.net' };
+      const res = await request(app.getHttpServer())
+        .post(change_password_url)
+        .send(creds);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeTruthy();
+      expect(res.body.message).toBe('Account Not Found.');
+    });
+    test('[18] Successfully sends email with verification code.', async () => {
+      await resetDb();
+      const register_url = '/api/auth/registration';
+      const creds = {
+        username: 'jacoblang11',
+        password: 'helloWorld?11',
+        age: '22',
+        first_name: 'jacob',
+        last_name: 'lang',
+        email: 'jacoblang127@gmail.com',
+      };
+      await request(app.getHttpServer()).post(register_url).send(creds);
+      const res = await request(app.getHttpServer())
+        .post(change_password_url)
+        .send({ email: creds.email });
+      expect(res.text).toStrictEqual(
+        'Check Your Inbox For Your Verification Code.',
+      );
+    });
   });
 });
