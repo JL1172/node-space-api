@@ -196,12 +196,11 @@ describe('Login Endpoint /api/auth/login', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
   });
-
   test('[1] Successfully returns 422 status code for empty login attempt.', async () => {
     const res = await request(app.getHttpServer()).post(login_url).send();
     expect(res.status).toBe(422);
   });
-  test('[2] Successfully throws "too many requests" error for exceeded wait limit.', async () => {
+  test('[2] Successfully throws "too many requests" error for exceeded rate limit.', async () => {
     const ratelimit = 10;
     for (let i = 0; i < ratelimit; i++) {
       const res = await request(app.getHttpServer()).post(login_url).send();
@@ -226,13 +225,42 @@ describe('Login Endpoint /api/auth/login', () => {
     });
   });
   test('[4] Successfully throws error for incorrect credentials. [username]', async () => {
-    const currentTime = Date.now();
-    console.log(currentTime);
     const res = await request(app.getHttpServer())
       .post(login_url)
       .send({ username: 'jacoblang1', password: 'helloWorld?11' });
     expect(res.body).toMatchObject({
       message: 'Username Or Password Is Incorrect.',
     });
+  });
+  test('[5] Incorrect login attempts consistently fall within a threshold of 50ms with one another regardless of what is incorrect (username or password).', async () => {
+    const threshold: number = 50;
+    const startTimeForIncorrectUsername = performance.now();
+    await request(app.getHttpServer())
+      .post(login_url)
+      .send({ username: 'jacoblang1', password: 'helloWorld?11' });
+    const endTimeForIncorrectUsername = performance.now();
+    const elapsedTimeForIncorrectUsername: number =
+      endTimeForIncorrectUsername - startTimeForIncorrectUsername;
+    const startTimeForIncorrectPassword = performance.now();
+    await request(app.getHttpServer())
+      .post(login_url)
+      .send({ username: 'jacoblang11', password: 'helloWorld?1' });
+    const endTimeForIncorrectPassword = performance.now();
+    const elapsedTimeForIncorrectPassword: number =
+      endTimeForIncorrectPassword - startTimeForIncorrectPassword;
+    const difference: number = Math.abs(
+      elapsedTimeForIncorrectPassword - elapsedTimeForIncorrectUsername,
+    );
+    expect(difference).toBeLessThanOrEqual(threshold);
+  });
+  test('[6] Successfully logs in given correct credentials and returns JWT token.', async () => {
+    const correctCredentials = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+    };
+    const res: request.Response = await request(app.getHttpServer())
+      .post(login_url)
+      .send(correctCredentials);
+    expect(res.body).toHaveProperty('token');
   });
 });
