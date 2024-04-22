@@ -9,6 +9,7 @@ The direction of Node space is uncertain, aiming to offer something different wi
 
 ### Testing
 Unit tests have already been developed using Jest and SuperTest.
+Integration testing will be implemented along with e2e tests with jest and cypress.
 
 ### Tech Stack
 - **MVC Framework:** Nest JS
@@ -22,4 +23,6 @@ Unit tests have already been developed using Jest and SuperTest.
 The design principles heavily focus on object-oriented programming, emphasizing encapsulation, abstraction, dependency injection, and simple testability. Standardized error handling and optimized code flow contribute to improved maintainability and readability.
 
 ### Project Goals
+> [!IMPORTANT]
+> I am really wanting to make this an extremely difficult project in order to learn, so please reach out if you have any suggestions.
 The goal is to create a production-grade multi-user application with robust security and high performance. This project serves as a learning opportunity and aims to push the developer's skills forward.
