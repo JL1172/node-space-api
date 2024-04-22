@@ -3,6 +3,8 @@ export enum SLEEP {
   ONE_FIFTY,
   TWO,
   TWO_FIFTY,
+  FIVE,
+  SIX,
   FIVE_SECONDS,
 }
 export class Timing {
@@ -11,6 +13,8 @@ export class Timing {
     [SLEEP.ONE_FIFTY]: 150,
     [SLEEP.TWO]: 200,
     [SLEEP.TWO_FIFTY]: 250,
+    [SLEEP.FIVE]: 500,
+    [SLEEP.SIX]: 600,
     [SLEEP.FIVE_SECONDS]: 5000,
   } as const;
   public static async delay(sleep_time: SLEEP): Promise<void> {

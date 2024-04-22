@@ -90,7 +90,7 @@ export class ValidateUserExists implements NestMiddleware {
       this.userClass.setUser(isValidUser);
       next();
     } catch (err) {
-      await Timing.delay(SLEEP.TWO);
+      await Timing.delay(SLEEP.SIX);
       this.errorHandler.reportHttpError(
         err.message === 'Username Or Password Is Incorrect.'
           ? err.message

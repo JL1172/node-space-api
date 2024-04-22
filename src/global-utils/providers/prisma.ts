@@ -76,6 +76,9 @@ export class PrismaProvider {
       data: verificationCodeEntryUpdated,
     });
   }
+  public async findVerificationCodeById(id: number): Promise<VerificationCode> {
+    return await this.prisma.verificationCode.findUnique({ where: { id } });
+  }
   public async storeVerificationCode(
     dataToInsert: VerificationCodeBodyToInsertIntoDb,
   ): Promise<void> {
