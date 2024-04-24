@@ -28,10 +28,10 @@ The design principles heavily focus on object-oriented programming, emphasizing 
 > The goal is to create a production-grade multi-user application with robust security and high performance. This project serves as a learning opportunity and aims to push the developer's skills forward.
 
 ### Modules: 
-1. authentication module 
-2. accounting module
-3. customer module
-4. project module
-5. time watch module
-6. invoice module
+1. [authentication module](/src/0-authentication-module/README.md)
+2. [accounting module](/src/0-accounting-module/README.md)
+3. [customer module](/src/0-customer-module/README.md)
+4. [project module](/src/0-project-module/README.md)
+5. [time watch module](/src/0-time-watch-module/README.md)
+6. [invoice module](/src/0-invoice-module/README.md)
 7. [Supplier Module](/src/0-supplier-module/README.md)
