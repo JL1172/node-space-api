@@ -43,9 +43,9 @@ export class AuthenticationController {
   ): Promise<{ token: string; message: string }> {
     try {
       const userToInsert = await this.prisma.getUserByEmail(body.email);
-      this.jwt.createJwtToken(userToInsert, 1 * 60, JWT_ROLE.RESET_PASSWORD);
+      this.jwt.createJwtToken(userToInsert, 5 * 60, JWT_ROLE.RESET_PASSWORD);
       const jwt = this.jwt.getJwtToken();
-      return { token: jwt, message: 'Success.' };
+      return { token: jwt, message: 'Success, 5 Minutes To Change Password.' };
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
