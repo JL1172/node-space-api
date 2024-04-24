@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from 'express';
 import { plainToClass } from 'class-transformer';
 import { RegistrationBody } from '../dtos/RegistrationBody';
 import { validateOrReject } from 'class-validator';
-import { PrismaProvider } from '../../global-utils/providers/prisma';
+import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { AuthenticationErrorHandler } from '../providers/error';
 
 @Injectable()

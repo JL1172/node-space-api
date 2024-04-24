@@ -26,3 +26,12 @@ The design principles heavily focus on object-oriented programming, emphasizing 
 > [!IMPORTANT]
 > I am really wanting to make this an extremely difficult project in order to learn, so please reach out if you have any suggestions.
 > The goal is to create a production-grade multi-user application with robust security and high performance. This project serves as a learning opportunity and aims to push the developer's skills forward.
+
+### Modules: 
+1. authentication module 
+2. accounting module
+3. customer module
+4. project module
+5. time watch module
+6. invoice module
+7. [/src/0-supplier-module/README.md](Supplier Module)

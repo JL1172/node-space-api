@@ -7,7 +7,7 @@ import { validateOrReject } from 'class-validator';
 import { ResetPasswordBody } from '../dtos/ResetPasswordBody';
 import * as validator from 'validator';
 import { JWT_ROLE, JwtProvider, decodedTokenDto } from '../providers/jwt';
-import { PrismaProvider } from '../../global-utils/providers/prisma';
+import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 
 @Injectable()
 export class ResetPasswordRateLimiter implements NestMiddleware {

@@ -6,7 +6,7 @@ import { plainToClass } from 'class-transformer';
 import { VerificationCodeBody } from '../dtos/VerificationCodeBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
-import { PrismaProvider } from '../../global-utils/providers/prisma';
+import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { VerificationCode } from '@prisma/client';
 
 @Injectable()

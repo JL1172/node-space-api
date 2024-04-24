@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { RegistrationBody } from './dtos/RegistrationBody';
-import { PrismaProvider } from '../global-utils/providers/prisma';
+import { PrismaProvider } from '../global/global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { BcryptProvider } from './providers/bcrypt';
 import { JWT_ROLE, JwtProvider } from './providers/jwt';

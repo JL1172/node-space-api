@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../app.module';
-import { resetDb } from '../../prisma/delete';
-import { PrismaProvider } from '../global-utils/providers/prisma';
+import { AppModule } from '../../app.module';
+import { resetDb } from '../../../prisma/delete';
+import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { VerificationCode } from '@prisma/client';
 
 describe('Register Endpoint /api/auth/registration', () => {

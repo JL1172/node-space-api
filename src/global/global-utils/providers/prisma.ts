@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtToken, PrismaClient, User, VerificationCode } from '@prisma/client';
-import { VerificationCodeBodyToInsertIntoDb } from 'src/authentication/dtos/ChangePasswordBody';
-import { RegistrationBody } from 'src/authentication/dtos/RegistrationBody';
+import { VerificationCodeBodyToInsertIntoDb } from 'src/0-authentication-module/dtos/ChangePasswordBody';
+import { RegistrationBody } from 'src/0-authentication-module/dtos/RegistrationBody';
 import { SingletonPrismaProvider } from './singleton-prisma';
 
 @Injectable()

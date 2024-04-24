@@ -5,7 +5,7 @@ import * as ratelimit from 'express-rate-limit';
 import { LoginBody } from '../dtos/LoginBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
-import { PrismaProvider } from '../../global-utils/providers/prisma';
+import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { UserClass } from '../providers/login';
 import { BcryptProvider } from '../providers/bcrypt';
 import { AuthenticationErrorHandler } from '../providers/error';

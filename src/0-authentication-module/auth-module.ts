@@ -6,7 +6,7 @@ import {
   VerifyUserIsUnique,
 } from './middleware /registration';
 import { AuthenticationController } from './auth-controller';
-import { PrismaProvider } from '../global-utils/providers/prisma';
+import { PrismaProvider } from '../global/global-utils/providers/prisma';
 import { BcryptProvider } from './providers/bcrypt';
 import {
   RateLimter,
@@ -43,7 +43,7 @@ import {
   ValidateResetPasswordHeaders,
   ValidateTokenIsNotBlacklisted,
 } from './middleware /reset-password';
-import { SingletonPrismaProvider } from '../global-utils/providers/singleton-prisma';
+import { SingletonPrismaProvider } from '../global/global-utils/providers/singleton-prisma';
 
 @Module({
   imports: [],
