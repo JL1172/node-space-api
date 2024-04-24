@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ExpiredTokenAndCodeCleanup } from './cron-jobs';
-import { PrismaProvider } from 'src/global/global-utils/providers/prisma';
+import { CronPrismaProvider } from './providers/prisma';
 
 @Module({
-  providers: [ExpiredTokenAndCodeCleanup, PrismaProvider],
+  providers: [ExpiredTokenAndCodeCleanup, CronPrismaProvider],
 })
 export class CronModule {}

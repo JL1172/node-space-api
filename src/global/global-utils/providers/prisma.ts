@@ -10,20 +10,6 @@ export class PrismaProvider {
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
   }
-  private async deleteAllExpiredVerificationCodes(): Promise<void> {
-    await this.prisma.verificationCode.deleteMany({
-      where: { expiration_date: { lt: new Date() } },
-    });
-  }
-  private async deleteAllExpiredJwt(): Promise<void> {
-    await this.prisma.jwtToken.deleteMany({
-      where: { expiration_time: { lt: new Date() } },
-    });
-  }
-  public async deleteAllExpiredCodesAndTokens(): Promise<void> {
-    await this.deleteAllExpiredVerificationCodes();
-    await this.deleteAllExpiredJwt();
-  }
   //this group of methods is for determining the uniqueness of a user
   public async getUserByUsername(receivedUsername: string): Promise<User> {
     return await this.prisma.user.findUnique({

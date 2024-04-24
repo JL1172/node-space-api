@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaProvider } from '../global-utils/providers/prisma';
+import { CronPrismaProvider } from './providers/prisma';
 
 @Injectable()
 export class ExpiredTokenAndCodeCleanup {
   private readonly logger: Logger = new Logger(ExpiredTokenAndCodeCleanup.name);
-  constructor(private readonly prisma: PrismaProvider) {}
+  constructor(private readonly prisma: CronPrismaProvider) {}
   @Cron(CronExpression.EVERY_HOUR)
   public async queryJwtTable(): Promise<void> {
     try {
@@ -14,7 +14,6 @@ export class ExpiredTokenAndCodeCleanup {
       );
       await this.prisma.deleteAllExpiredCodesAndTokens();
       this.logger.log('Cron Job Successfully Executed.');
-      await this.prisma.disconnect();
     } catch (err) {
       this.logger.error('Error Attempting to remove expired tokens: ', err);
     }
