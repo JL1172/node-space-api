@@ -34,4 +34,4 @@ The design principles heavily focus on object-oriented programming, emphasizing 
 4. project module
 5. time watch module
 6. invoice module
-7. [/src/0-supplier-module/README.md](Supplier Module)
+7. [Supplier Module](/src/0-supplier-module/README.md)
