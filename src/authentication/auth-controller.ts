@@ -43,7 +43,7 @@ export class AuthenticationController {
   ): Promise<{ token: string; message: string }> {
     try {
       const userToInsert = await this.prisma.getUserByEmail(body.email);
-      this.jwt.createJwtToken(userToInsert, 5 * 60, JWT_ROLE.RESET_PASSWORD);
+      this.jwt.createJwtToken(userToInsert, 1 * 60, JWT_ROLE.RESET_PASSWORD);
       const jwt = this.jwt.getJwtToken();
       return { token: jwt, message: 'Success.' };
     } catch (err) {
@@ -55,6 +55,7 @@ export class AuthenticationController {
     try {
       //grab decoded token
       const decodedToken = this.jwt.getDecodedJwtToken();
+      console.log(decodedToken);
       //grab the token
       const token = this.jwt.getJwtToken();
       //find user with id

@@ -5,7 +5,7 @@ export class RandomCodeGenerator {
   private readonly length: number = 6;
   private readonly expirationDate: Date;
   private readonly letterList: string =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    'ABCDEFGHJKilMNOPQRSTUVWXYZabcdefghjkmnopqrstuvwxyz0123456789';
   constructor() {
     const currentTime = new Date();
     this.expirationDate = new Date(currentTime.getTime() + 5 * 1000 * 60);
