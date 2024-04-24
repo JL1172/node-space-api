@@ -35,3 +35,6 @@ The design principles heavily focus on object-oriented programming, emphasizing 
 5. [time watch module](/src/0-time-watch-module/README.md)
 6. [invoice module](/src/0-invoice-module/README.md)
 7. [Supplier Module](/src/0-supplier-module/README.md)
+7. Workflow Automation Module
+8. chatbot module
+9. inventory module
