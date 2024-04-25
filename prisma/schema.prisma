@@ -23,6 +23,7 @@ model User {
   last_name        String
   age              Int
   VerificationCode VerificationCode[]
+  Customer         Customer[]
 }
 
 model VerificationCode {
@@ -42,4 +43,22 @@ model JwtToken {
   token           String    @unique
   expiration_time DateTime
   created_at      DateTime? @default(now())
+}
+
+//need to add project, invoice relationships 
+model Customer {
+  id          Int       @id @default(autoincrement())
+  full_name   String
+  email       String
+  address     String
+  phoneNumber String
+  user_id     Int       @unique
+  user        User      @relation(fields: [user_id], references: [id])
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt()
+
+  @@unique([email, user_id])
+  @@unique([address, user_id])
+  @@unique([phoneNumber, user_id])
+  @@unique([full_name, user_id])
 }
