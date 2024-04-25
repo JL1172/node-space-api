@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { SingletonPrismaProvider } from 'src/global/global-utils/providers/singleton-prisma';
+import { SingletonPrismaProvider } from '../../global-utils/providers/singleton-prisma';
 
 @Injectable()
 export class CronPrismaProvider {
