@@ -7,6 +7,7 @@ import { NewCustomerBody } from '../dtos/NewCustomerBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
 import { CustomerPrismaProvider } from '../providers/prisma';
+import { JwtProvider } from '../providers/jwt';
 
 @Injectable()
 export class NewCustomerRateLimit implements NestMiddleware {
@@ -23,6 +24,32 @@ export class NewCustomerRateLimit implements NestMiddleware {
   });
   use(req: Request, res: Response, next: NextFunction) {
     this.ratelimit(req, res, next);
+  }
+}
+
+@Injectable()
+export class ValidateJwtIsValid implements NestMiddleware {
+  constructor(
+    private readonly errorHandler: CustomerErrorHandler,
+    private readonly jwt: JwtProvider,
+  ) {}
+  use(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (req.headers.authorization === null) {
+        this.errorHandler.reportError(
+          'Token Required.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      const isValidJwt = this.jwt.validateJwtToken(req.headers.authorization);
+      if (isValidJwt === true) next();
+      this.errorHandler.reportError('Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (err) {
+      this.errorHandler.reportError(
+        err.message || 'An Unexpected Error Occurred.',
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
 
@@ -77,11 +104,19 @@ export class VerifyCustomerIsUnique implements NestMiddleware {
   constructor(
     private readonly errorHandler: CustomerErrorHandler,
     private readonly prisma: CustomerPrismaProvider,
+    private readonly jwt: JwtProvider,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-      // const isCustomerUnique: boolean =
-        // await this.prisma.verifyCustomerIsUnique(req.body);
+      const id = this.jwt.getDecodedJwtToken().id;
+      const isCustomerUnique: boolean =
+        await this.prisma.verifyCustomerIsUnique(id, req.body);
+      if (isCustomerUnique === false) {
+        this.errorHandler.reportError(
+          'Error Creating New Customer, Customer With One Of The Following Already Exists: email, phone number, address, full name.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
     } catch (err) {
       this.errorHandler.reportError(
         err.message ||

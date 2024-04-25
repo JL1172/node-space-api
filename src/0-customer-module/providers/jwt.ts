@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { User } from '@prisma/client';
 import 'dotenv/config';
-import { AuthenticationErrorHandler } from './error';
+import { CustomerErrorHandler } from './error';
 
 export enum JWT_ROLE {
   LOGIN = 'LOGIN',
@@ -25,7 +25,7 @@ export class JwtProvider {
   private jwtToken: string;
   private readonly jwt = jwt;
   private decodedJwt: decodedTokenDto;
-  constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
+  constructor(private readonly errorHandler: CustomerErrorHandler) {}
   private setJwtToken(token: string): void {
     this.jwtToken = token;
   }
@@ -64,7 +64,7 @@ export class JwtProvider {
       );
       this.setJwtToken(signedJwt);
     } catch (err) {
-      this.errorHandler.reportHttpError(
+      this.errorHandler.reportError(
         'An Unexpected Problem Occurred.',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );

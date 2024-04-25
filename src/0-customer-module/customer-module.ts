@@ -4,14 +4,16 @@ import { CustomerErrorHandler } from './providers/error';
 import {
   NewCustomerRateLimit,
   SanitizeNewCustomerBody,
+  ValidateJwtIsValid,
   ValidateNewCustomerBody,
   VerifyCustomerIsUnique,
 } from './middleware/new-customer';
 import { CustomerPrismaProvider } from './providers/prisma';
+import { JwtProvider } from './providers/jwt';
 
 @Module({
   imports: [],
-  providers: [CustomerErrorHandler, CustomerPrismaProvider],
+  providers: [CustomerErrorHandler, CustomerPrismaProvider, JwtProvider],
   controllers: [CustomerController],
 })
 export class CustomerModule implements NestModule {
@@ -19,6 +21,7 @@ export class CustomerModule implements NestModule {
     consumer
       .apply(
         NewCustomerRateLimit,
+        ValidateJwtIsValid,
         ValidateNewCustomerBody,
         SanitizeNewCustomerBody,
         VerifyCustomerIsUnique,
