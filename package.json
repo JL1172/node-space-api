@@ -14,11 +14,8 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "resetdb": "cd prisma && ts-node delete.ts",
-    "test": "jest --verbose --runInBand --watchAll",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:all": "jest --verbose --runInBand --watchAll",
+    "test:customer": "jest customer.test.ts --verbose --runInBand --watchAll ----detectOpenHandles"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

@@ -1,9 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Post } from '@nestjs/common';
 
 @Controller('/api/customer')
 export class CustomerController {
-  @Get('/')
-  public sanity() {
+  @Post('/create-new-customer')
+  public createNewCustomer(): string {
     return 'hello world';
   }
 }
