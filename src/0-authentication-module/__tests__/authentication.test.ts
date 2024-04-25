@@ -3,8 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
 import { resetDb } from '../../../prisma/delete';
-import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { VerificationCode } from '@prisma/client';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 describe('Register Endpoint /api/auth/registration', () => {
   let app: INestApplication;
@@ -365,7 +365,8 @@ describe('Full Password Reset Tests: [3 Endpoints Make Up This Process.]', () =>
     });
     test('[19] Successfully validates the email verification code exists in the Database.', async () => {
       const email: string = 'jacoblang127@gmail.com';
-      const prisma: PrismaProvider = new PrismaProvider();
+      const prisma: AuthenticationPrismaProvider =
+        new AuthenticationPrismaProvider();
       const res = await request(app.getHttpServer()) //eslint-disable-line
         .post(change_password_url)
         .send({ email: email });
@@ -386,7 +387,7 @@ describe('Full Password Reset Tests: [3 Endpoints Make Up This Process.]', () =>
       >[] = [null, null, null, null];
       //email
       const email: string = 'jacoblang127@gmail.com';
-      const prisma = new PrismaProvider();
+      const prisma = new AuthenticationPrismaProvider();
       //loops and sends out 4 emails.
       for (let i = 0; i < verificationCodes.length; i++) {
         await request(app.getHttpServer())

@@ -6,8 +6,8 @@ import { plainToClass } from 'class-transformer';
 import { VerificationCodeBody } from '../dtos/VerificationCodeBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
-import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { VerificationCode } from '@prisma/client';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 @Injectable()
 export class VerifyCodeRateLimit implements NestMiddleware {
@@ -79,7 +79,7 @@ export class SanitizeVerificationCodeBody implements NestMiddleware {
 export class ValidateEmailExistsVerificationCode implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
@@ -108,7 +108,7 @@ export class ValidateEmailExistsVerificationCode implements NestMiddleware {
 export class ValidateVerificationCode implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {

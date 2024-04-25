@@ -5,11 +5,11 @@ import * as ratelimit from 'express-rate-limit';
 import { LoginBody } from '../dtos/LoginBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
-import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { UserClass } from '../providers/login';
 import { BcryptProvider } from '../providers/bcrypt';
 import { AuthenticationErrorHandler } from '../providers/error';
 import { SLEEP, Timing } from '../providers/delay';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 @Injectable()
 export class RateLimter implements NestMiddleware {
@@ -73,7 +73,7 @@ export class SanitizeLoginBody implements NestMiddleware {
 export class ValidateUserExists implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
     private readonly userClass: UserClass,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {

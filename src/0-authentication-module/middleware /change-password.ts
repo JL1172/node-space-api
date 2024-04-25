@@ -8,9 +8,9 @@ import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
 import { RandomCodeGenerator } from '../providers/random-code';
 import { EmailMarkup, Mailer } from '../providers/email';
-import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { UserEmailStorage } from '../providers/user-email';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 @Injectable()
 export class ChangePasswordRateLimiter implements NestMiddleware {
@@ -78,7 +78,7 @@ export class SanitizeChangePasswordBody implements NestMiddleware {
 export class ValidateEmailExists implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
     private readonly userStorage: UserEmailStorage,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
@@ -108,7 +108,7 @@ export class GenerateEmailWithVerificationCode implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
     private readonly generateVerificationCode: RandomCodeGenerator,
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
     private readonly mailer: Mailer,
     private readonly userStorage: UserEmailStorage,
   ) {}

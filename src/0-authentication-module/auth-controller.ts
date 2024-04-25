@@ -1,17 +1,17 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { RegistrationBody } from './dtos/RegistrationBody';
-import { PrismaProvider } from '../global/global-utils/providers/prisma';
 import { User } from '@prisma/client';
 import { BcryptProvider } from './providers/bcrypt';
 import { JWT_ROLE, JwtProvider } from './providers/jwt';
 import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
 import { ResetPasswordBody } from './dtos/ResetPasswordBody';
+import { AuthenticationPrismaProvider } from './providers/prisma';
 
 @Controller('/api/auth')
 export class AuthenticationController {
   constructor(
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
     private readonly bcrypt: BcryptProvider,
     private readonly jwt: JwtProvider,
     private readonly user: UserClass,

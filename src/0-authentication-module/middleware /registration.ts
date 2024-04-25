@@ -5,8 +5,8 @@ import { NextFunction, Request, Response } from 'express';
 import { plainToClass } from 'class-transformer';
 import { RegistrationBody } from '../dtos/RegistrationBody';
 import { validateOrReject } from 'class-validator';
-import { PrismaProvider } from '../../global/global-utils/providers/prisma';
 import { AuthenticationErrorHandler } from '../providers/error';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 @Injectable()
 export class RateLimiter implements NestMiddleware {
@@ -80,7 +80,7 @@ export class SanitizeBody implements NestMiddleware {
 @Injectable()
 export class VerifyUserIsUnique implements NestMiddleware {
   constructor(
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
     private readonly errorHander: AuthenticationErrorHandler,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {

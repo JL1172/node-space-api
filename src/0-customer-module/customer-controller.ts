@@ -1,4 +1,9 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
 @Controller('/api/customer')
-export class CustomerController {}
+export class CustomerController {
+  @Get('/')
+  public sanity() {
+    return 'hello world';
+  }
+}

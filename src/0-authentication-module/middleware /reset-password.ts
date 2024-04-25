@@ -7,7 +7,7 @@ import { validateOrReject } from 'class-validator';
 import { ResetPasswordBody } from '../dtos/ResetPasswordBody';
 import * as validator from 'validator';
 import { JWT_ROLE, JwtProvider, decodedTokenDto } from '../providers/jwt';
-import { PrismaProvider } from '../../global/global-utils/providers/prisma';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 @Injectable()
 export class ResetPasswordRateLimiter implements NestMiddleware {
@@ -114,7 +114,7 @@ export class SanitizeResetPasswordBody implements NestMiddleware {
 @Injectable()
 export class ValidateTokenIsNotBlacklisted implements NestMiddleware {
   constructor(
-    private readonly prisma: PrismaProvider,
+    private readonly prisma: AuthenticationPrismaProvider,
     private readonly errorHander: AuthenticationErrorHandler,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
