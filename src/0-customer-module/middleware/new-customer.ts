@@ -117,6 +117,7 @@ export class VerifyCustomerIsUnique implements NestMiddleware {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
+      next();
     } catch (err) {
       this.errorHandler.reportError(
         err.message ||
