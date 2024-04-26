@@ -8,6 +8,7 @@ import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
 import { CustomerPrismaProvider } from '../providers/prisma';
 import { JwtProvider } from '../providers/jwt';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Injectable()
 export class NewCustomerRateLimit implements NestMiddleware {
@@ -35,7 +36,7 @@ export class ValidateJwtIsValid implements NestMiddleware {
   ) {}
   use(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.headers.authorization === null) {
+      if (req.headers.authorization === undefined) {
         this.errorHandler.reportError(
           'Token Required.',
           HttpStatus.UNAUTHORIZED,
@@ -43,12 +44,13 @@ export class ValidateJwtIsValid implements NestMiddleware {
       }
       const isValidJwt = this.jwt.validateJwtToken(req.headers.authorization);
       if (isValidJwt === true) next();
-      this.errorHandler.reportError('Error', HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (err) {
-      this.errorHandler.reportError(
-        err.message || 'An Unexpected Error Occurred.',
-        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const message = err?.inner?.message || err.message;
+      const status =
+        err instanceof JsonWebTokenError
+          ? HttpStatus.UNAUTHORIZED
+          : err?.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      this.errorHandler.reportError(message, status);
     }
   }
 }

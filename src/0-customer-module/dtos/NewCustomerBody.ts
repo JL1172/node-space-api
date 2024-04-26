@@ -25,3 +25,11 @@ export class NewCustomerBody {
   @IsEmail({}, { message: 'Invalid Email.' })
   email: string;
 }
+
+export class NewCustomerBodyToInsertIntoDb {
+  phoneNumber: string;
+  address: string;
+  full_name: string;
+  email: string;
+  user_id: number;
+}

@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../app.module';
 import * as request from 'supertest';
+import { deleteCustomer } from '../../../prisma/deleteCustomer';
 
 describe('New Customer Tests', () => {
   let app: INestApplication;
@@ -26,9 +27,65 @@ describe('New Customer Tests', () => {
       .send();
     expect(res.status).toBe(429);
   });
-  test('[2] Throws error if invalid request body is received.', async () => {
+  test('[2] Throws error if no Jwt is present in authorization headers.', async () => {
     const res: request.Response = await request(app.getHttpServer())
       .post(newCustomerUrl)
+      .send();
+    const expectedProperties: string[] = ['message', 'statusCode'];
+    for (const property of expectedProperties) {
+      expect(res.body).toHaveProperty(property);
+    }
+    expect(res.body).toMatchObject({
+      message: 'Token Required.',
+      statusCode: 401,
+    });
+  });
+  test('[3] Throws Error if Jwt is present, but invalid.', async () => {
+    const credentials: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+    };
+    const loginUrl: string = '/api/auth/login';
+    const res: request.Response = await request(app.getHttpServer())
+      .post(loginUrl)
+      .send(credentials);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('token');
+    expect(res.body.token).toBeTruthy();
+    const token: string = res.body.token;
+    const incorrectToken = token.concat('h');
+    const res2: request.Response = await request(app.getHttpServer())
+      .post(newCustomerUrl)
+      .set({ authorization: incorrectToken })
+      .send();
+    expect(res2.status).toBe(401);
+    expect(res2.body).toHaveProperty('message');
+    expect(res2.body.message).toBe('invalid signature');
+    const incorrectToken2 = token.split('');
+    incorrectToken2.splice(token.length - 1, 1, 'u');
+    const res3: request.Response = await request(app.getHttpServer())
+      .post(newCustomerUrl)
+      .set({ authorization: incorrectToken2.join('') })
+      .send();
+    expect(res3.body.message).not.toBe(null);
+    expect(res3.body.message).toBe('invalid signature');
+  });
+  test('[4] Throws error if invalid request body is received.', async () => {
+    const credentials: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+    };
+    const loginUrl: string = '/api/auth/login';
+    const loginRes: request.Response = await request(app.getHttpServer())
+      .post(loginUrl)
+      .send(credentials);
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body).toHaveProperty('token');
+    expect(loginRes.body.token).toBeTruthy();
+    const token: string = loginRes.body.token;
+    const res: request.Response = await request(app.getHttpServer())
+      .post(newCustomerUrl)
+      .set({ authorization: token })
       .send();
     expect(res.body).toMatchObject({
       phoneNumber: {
@@ -55,8 +112,20 @@ describe('New Customer Tests', () => {
       },
     });
   });
-  test('[3] Validates erros are thrown in all the correct circumstances.', async () => {
+  test('[5] Validates the correct errors are thrown for the edge cases for the request body.', async () => {
     //incorrect phone number suite
+    const credentials: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+    };
+    const loginUrl: string = '/api/auth/login';
+    const loginRes: request.Response = await request(app.getHttpServer())
+      .post(loginUrl)
+      .send(credentials);
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body).toHaveProperty('token');
+    expect(loginRes.body.token).toBeTruthy();
+    const token: string = loginRes.body.token;
     const incorrectPhonePayloadV1 = {
       phoneNumber: 111,
       address: '868 S Arizona Ave, Chandler, Arizona, 85225',
@@ -181,9 +250,74 @@ describe('New Customer Tests', () => {
     for (let i = 0; i < incorrectPayload.length; i++) {
       const res = await request(app.getHttpServer())
         .post(newCustomerUrl)
+        .set({ authorization: token })
         .send(incorrectPayload[i]);
       expect(res.body).toMatchObject(expectedErrorMessages[i]);
     }
   });
-  test('[4] Throws error if customer already exists in the database.', async () => {});
+  test('[6] Throws error if customer, related to a user, already exists in the database.', async () => {
+    await deleteCustomer();
+    const credentials: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+    };
+    const loginUrl: string = '/api/auth/login';
+    const loginRes: request.Response = await request(app.getHttpServer())
+      .post(loginUrl)
+      .send(credentials);
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body).toHaveProperty('token');
+    expect(loginRes.body.token).toBeTruthy();
+    const token: string = loginRes.body.token;
+    const customerInput: Record<string, string> = {
+      phoneNumber: '4439452195',
+      address: '868 S Arizona Ave. Apt#1002 Chandler, Arizona 85225-104',
+      full_name: 'john smith',
+      email: 'johnsmith@hotmail.com',
+    };
+    const res: request.Response = await request(app.getHttpServer())
+      .post(newCustomerUrl)
+      .set({ authorization: token })
+      .send(customerInput);
+    expect(res.text).toBe('Successfully Created Customer.');
+    const res2: request.Response = await request(app.getHttpServer())
+      .post(newCustomerUrl)
+      .set({ authorization: token })
+      .send(customerInput);
+    expect(res2.status).toBe(422);
+    expect(res2.body).toHaveProperty('message');
+    expect(res2.body).toHaveProperty('statusCode');
+    const expectedMessage: Record<string, string | number> = {
+      statusCode: 422,
+      message:
+        'Error Creating New Customer, Customer With One Of The Following Already Exists: email, phone number, address, full name.',
+    };
+    expect(res2.body).toMatchObject(expectedMessage);
+  });
+  test('[7] Successfully creates a new customer.', async () => {
+    await deleteCustomer();
+    const credentials: Record<string, string> = {
+      username: 'jacoblang11',
+      password: 'helloWorld?11',
+    };
+    const loginUrl: string = '/api/auth/login';
+    const loginRes: request.Response = await request(app.getHttpServer())
+      .post(loginUrl)
+      .send(credentials);
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body).toHaveProperty('token');
+    expect(loginRes.body.token).toBeTruthy();
+    const token: string = loginRes.body.token;
+    const customerInput: Record<string, string> = {
+      phoneNumber: '4439452195',
+      address: '868 S Arizona Ave. Apt#1002 Chandler, Arizona 85225-104',
+      full_name: 'john smith',
+      email: 'johnsmith@hotmail.com',
+    };
+    const res: request.Response = await request(app.getHttpServer())
+      .post(newCustomerUrl)
+      .set({ authorization: token })
+      .send(customerInput);
+    expect(res.text).toBe('Successfully Created Customer.');
+  });
 });

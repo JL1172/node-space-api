@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Customer, PrismaClient } from '@prisma/client';
-import { SingletonPrismaProvider } from 'src/global/global-utils/providers/singleton-prisma';
-import { NewCustomerBody } from '../dtos/NewCustomerBody';
+import { SingletonPrismaProvider } from '../../global/global-utils/providers/singleton-prisma';
+import {
+  NewCustomerBody,
+  NewCustomerBodyToInsertIntoDb,
+} from '../dtos/NewCustomerBody';
 
 @Injectable()
 export class CustomerPrismaProvider {
@@ -66,5 +69,10 @@ export class CustomerPrismaProvider {
     );
     if (isPhoneNumberUnique !== null) return false;
     return true;
+  }
+  public async createNewCustomer(
+    newCustomer: NewCustomerBodyToInsertIntoDb,
+  ): Promise<void> {
+    await this.prisma.customer.create({ data: newCustomer });
   }
 }
