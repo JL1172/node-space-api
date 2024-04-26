@@ -344,7 +344,7 @@ describe('Full Password Reset Tests: [3 Endpoints Make Up This Process.]', () =>
       expect(res.body.message).toBeTruthy();
       expect(res.body.message).toBe('Account Not Found.');
     });
-    test.skip('[18] Successfully sends email with verification code.', async () => {
+    test('[18] Successfully sends email with verification code.', async () => {
       await resetDb();
       const register_url = '/api/auth/registration';
       const creds = {

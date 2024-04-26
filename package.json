@@ -14,9 +14,9 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "resetdb": "cd prisma && ts-node delete.ts",
-    "test:all": "jest --verbose --runInBand --watchAll",
-    "test:customer": "jest customer.test.ts --verbose --runInBand --watchAll ----detectOpenHandles",
-    "test:auth": "jest authentication.test.ts --verbose --runInBand --watchAll ----detectOpenHandles"
+    "test:all": "jest --verbose --runInBand --watchAll --detectOpenHandles",
+    "test:customer": "jest customer.test.ts --verbose --runInBand --watchAll --detectOpenHandles",
+    "test:auth": "jest authentication.test.ts --verbose --runInBand --watchAll --detectOpenHandles"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
