@@ -3,7 +3,7 @@
 0. [x] Create new customer
 
 1. [ ] message customers
-       - [ ] create message table on db
+       - [x] create message table on db
        - [ ] create /draft-message-to-customer endpoint
        - [ ] this endpoint will expect the following:
              1. subject

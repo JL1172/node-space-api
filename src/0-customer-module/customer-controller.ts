@@ -21,8 +21,21 @@ export class CustomerController {
     await this.prisma.createNewCustomer(newCustomer);
     return 'Successfully Created Customer.';
   }
-  @Post('/message-customer')
-  public async messageCustomer(): Promise<string> {
+  //draft message to customer
+  @Post('/draft-message-to-customer')
+  public async draftMessageToCustomer(): Promise<string> {
+    //just return the preview of the message
     return 'Successfully Messaged Customer.';
+  }
+  //send drafted message to ai in order to get enhanced message
+  @Post('/ai-message-recommendation')
+  public async getAiRecommendation(): Promise<string> {
+    //return the preview of the ai message and the original
+    return 'Here is your message and the ai recommended message.';
+  }
+  //validate and sanitize again
+  @Post('/send-customer-message')
+  public async sendCustomerMessage(): Promise<string> {
+    return 'Message Successfully Sent.';
   }
 }
