@@ -21,4 +21,8 @@ export class CustomerController {
     await this.prisma.createNewCustomer(newCustomer);
     return 'Successfully Created Customer.';
   }
+  @Post('/message-customer')
+  public async messageCustomer(): Promise<string> {
+    return 'Successfully Messaged Customer.';
+  }
 }

@@ -14,16 +14,17 @@ datasource db {
 }
 
 model User {
-  id               Int                @id @default(autoincrement())
-  created_at       DateTime?          @default(now())
-  email            String             @unique
-  username         String             @unique
-  password         String
-  first_name       String
-  last_name        String
-  age              Int
-  VerificationCode VerificationCode[]
-  Customer         Customer[]
+  id                  Int                @id @default(autoincrement())
+  created_at          DateTime?          @default(now())
+  email               String             @unique
+  username            String             @unique
+  password            String
+  first_name          String
+  last_name           String
+  age                 Int
+  VerificationCode    VerificationCode[]
+  Customer            Customer[]
+  Message             Message[]
 }
 
 model VerificationCode {
@@ -52,13 +53,26 @@ model Customer {
   email       String
   address     String
   phoneNumber String
-  user_id     Int       
+  user_id     Int
   user        User      @relation(fields: [user_id], references: [id])
   created_at  DateTime? @default(now())
   updated_at  DateTime? @updatedAt()
+  Message     Message[]
 
   @@unique([email, user_id])
   @@unique([address, user_id])
   @@unique([phoneNumber, user_id])
   @@unique([full_name, user_id])
+}
+
+model Message {
+  id                   Int       @id @default(autoincrement())
+  message_subject      String
+  message_text         String
+  message_media        Bytes?
+  message_sender_id    Int
+  message_sender       User      @relation(fields: [message_sender_id], references: [id])
+  message_recipient_id Int
+  message_recipient    Customer  @relation(fields: [message_recipient_id], references: [id])
+  created_at           DateTime? @default(now())
 }
