@@ -1,10 +1,21 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  FileTypeValidator,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CustomerPrismaProvider } from './providers/prisma';
 import {
   NewCustomerBody,
   NewCustomerBodyToInsertIntoDb,
 } from './dtos/NewCustomerBody';
 import { JwtProvider } from './providers/jwt';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ValidateDraftMessageBody } from './interceptors/draft-message';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -23,9 +34,20 @@ export class CustomerController {
   }
   //draft message to customer
   @Post('/draft-message-to-customer')
-  public async draftMessageToCustomer(): Promise<string> {
+  @UseInterceptors(FilesInterceptor('files'), ValidateDraftMessageBody)
+  public async draftMessageToCustomer(
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|pdf|docx|odt)' }),
+          new MaxFileSizeValidator({ maxSize: 500000 }),
+        ],
+      }),
+    )
+    files: Array<Express.Multer.File>,
+  ): Promise<Record<string, any>> {
     //just return the preview of the message
-    return 'Successfully Messaged Customer.';
+    return { files };
   }
   //send drafted message to ai in order to get enhanced message
   @Post('/ai-message-recommendation')
