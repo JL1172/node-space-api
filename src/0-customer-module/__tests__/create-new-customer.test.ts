@@ -4,7 +4,7 @@ import { AppModule } from '../../app.module';
 import * as request from 'supertest';
 import { deleteCustomer } from '../../../prisma/deleteCustomer';
 
-describe('New Customer Tests', () => {
+describe('Create new customer endpoint: [/api/customer/create-new-customer]', () => {
   let app: INestApplication;
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({

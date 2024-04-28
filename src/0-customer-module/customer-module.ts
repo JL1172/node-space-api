@@ -10,6 +10,10 @@ import {
 } from './middleware/new-customer';
 import { CustomerPrismaProvider } from './providers/prisma';
 import { JwtProvider } from './providers/jwt';
+import {
+  DraftMessageRateLimit,
+  VerifyJwtIsValidForDraftMessageToCustomerEndpoint,
+} from './middleware/draft-message';
 
 @Module({
   imports: [],
@@ -27,5 +31,11 @@ export class CustomerModule implements NestModule {
         VerifyCustomerIsUnique,
       )
       .forRoutes('/api/customer/create-new-customer');
+    consumer
+      .apply(
+        DraftMessageRateLimit,
+        VerifyJwtIsValidForDraftMessageToCustomerEndpoint,
+      )
+      .forRoutes('/api/customer/draft-message-to-customer');
   }
 }
