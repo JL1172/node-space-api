@@ -17,7 +17,7 @@
     "test:all": "jest --verbose --runInBand --watchAll --detectOpenHandles",
     "test:customer:all": "jest 0-customer-module --verbose --runInBand --watchAll --detectOpenHandles ",
     "test:customer:new-customer": "jest create-new-customer.test.ts --verbose --runInBand --watchAll --detectOpenHandles",
-    "test:customer:draft-message": "jest draft-message-to-customer.test.ts --verbose --runInBand --watchAll --detectOpenHandles",
+    "test:customer:draft-message": "jest draft-message-to-customer.test.ts --watchAll --verbose --runInBand --detectOpenHandles",
     "test:auth": "jest authentication.test.ts --verbose --runInBand --watchAll --detectOpenHandles"
   },
   "dependencies": {

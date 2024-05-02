@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { RegistrationBody } from './dtos/RegistrationBody';
 import { User } from '@prisma/client';
 import { BcryptProvider } from './providers/bcrypt';
@@ -7,6 +14,7 @@ import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
 import { ResetPasswordBody } from './dtos/ResetPasswordBody';
 import { AuthenticationPrismaProvider } from './providers/prisma';
+import { LogoutBody } from './dtos/LogoutBody';
 
 @Controller('/api/auth')
 export class AuthenticationController {
@@ -55,7 +63,6 @@ export class AuthenticationController {
     try {
       //grab decoded token
       const decodedToken = this.jwt.getDecodedJwtToken();
-      console.log(decodedToken);
       //grab the token
       const token = this.jwt.getJwtToken();
       //find user with id
@@ -77,5 +84,14 @@ export class AuthenticationController {
     } catch (err) {
       this.errorHandler.reportHttpError(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+  @Get('/logout')
+  public async logout(@Body() body: LogoutBody): Promise<string> {
+    const tokenToInsertIntoDb: { token: string; expiration_time: Date } = {
+      token: body.token,
+      expiration_time: new Date(this.jwt.getDecodedJwtToken().exp * 1000),
+    };
+    await this.prisma.createNewJwtToken(tokenToInsertIntoDb);
+    return 'Successfully Logged Out.';
   }
 }

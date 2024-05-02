@@ -10,6 +10,7 @@ export class AuthenticationPrismaProvider {
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
   }
+
   //this group of methods is for determining the uniqueness of a user
   public async getUserByUsername(receivedUsername: string): Promise<User> {
     return await this.prisma.user.findUnique({

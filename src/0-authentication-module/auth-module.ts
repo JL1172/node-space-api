@@ -44,6 +44,11 @@ import {
 } from './middleware /reset-password';
 import { SingletonPrismaProvider } from '../global/global-utils/providers/singleton-prisma';
 import { AuthenticationPrismaProvider } from './providers/prisma';
+import {
+  LogoutRateLimiter,
+  ValidateJwtTokenForLogout,
+  ValidateLogoutBody,
+} from './middleware /logout';
 
 @Module({
   imports: [],
@@ -102,5 +107,13 @@ export class AuthenticationModule implements NestModule {
         ValidateJwtToken,
       )
       .forRoutes('/api/auth/reset-password');
+    consumer
+      .apply(
+        LogoutRateLimiter,
+        ValidateLogoutBody,
+        ValidateTokenIsNotBlacklisted,
+        ValidateJwtTokenForLogout,
+      )
+      .forRoutes('/api/auth/logout');
   }
 }
