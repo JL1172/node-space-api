@@ -29,6 +29,39 @@ export class NewCustomerRateLimit implements NestMiddleware {
 }
 
 @Injectable()
+export class ValidateTokenIsNotBlacklisted implements NestMiddleware {
+  constructor(
+    private readonly prisma: CustomerPrismaProvider,
+    private readonly errorHandler: CustomerErrorHandler,
+  ) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (req.headers.authorization === undefined) {
+        this.errorHandler.reportError(
+          'Token Required.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      const token = await this.prisma.getJwtByToken(
+        req.headers['authorization'],
+      );
+      if (token !== null) {
+        this.errorHandler.reportError(
+          'Invalid Token [403].',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      next();
+    } catch (err) {
+      this.errorHandler.reportError(
+        err.message || err,
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
+
+@Injectable()
 export class ValidateJwtIsValid implements NestMiddleware {
   constructor(
     private readonly errorHandler: CustomerErrorHandler,

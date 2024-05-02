@@ -6,6 +6,7 @@ import {
   SanitizeNewCustomerBody,
   ValidateJwtIsValid,
   ValidateNewCustomerBody,
+  ValidateTokenIsNotBlacklisted,
   VerifyCustomerIsUnique,
 } from './middleware/new-customer';
 import { CustomerPrismaProvider } from './providers/prisma';
@@ -25,6 +26,7 @@ export class CustomerModule implements NestModule {
     consumer
       .apply(
         NewCustomerRateLimit,
+        ValidateTokenIsNotBlacklisted,
         ValidateJwtIsValid,
         ValidateNewCustomerBody,
         SanitizeNewCustomerBody,
@@ -34,6 +36,7 @@ export class CustomerModule implements NestModule {
     consumer
       .apply(
         DraftMessageRateLimit,
+        ValidateTokenIsNotBlacklisted,
         VerifyJwtIsValidForDraftMessageToCustomerEndpoint,
       )
       .forRoutes('/api/customer/draft-message-to-customer');

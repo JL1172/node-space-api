@@ -36,5 +36,5 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
       threshold,
     );
   });
-  test('[2] Successfully throws 401 unauthorized status code for missing, incorrect, or expired jwt.', async () => {});
+  test('[2] Successfully throws 401 unauthorized status code for missing, blacklisted, incorrect, or expired jwt.', async () => {});
 });
