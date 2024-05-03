@@ -4,6 +4,18 @@ import { AppModule } from '../../app.module';
 import * as request from 'supertest';
 import { maxRateLimitForDraftMessageEndpoint } from '../middleware/draft-message';
 import { deleteJwt } from '../../../prisma/deleteJwt';
+/*
+//@ts-expect-error cannot resolve type of test file
+import test_docx from './test-files/valid-files/test.docx';
+//@ts-expect-error cannot resolve type of test file
+import test_jpg from './test-files/valid-files/test.jpg';
+//@ts-expect-error cannot resolve type of test file
+import test_odt from './test-files/valid-files/test.odt';
+//@ts-expect-error cannot resolve type of test file
+import test_pdf from './test-files/valid-files/test.pdf';
+//@ts-expect-error cannot resolve type of test file
+import test_png from './test-files/valid-files/.test.png';
+*/
 
 describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-customer]', () => {
   let app: INestApplication;
@@ -37,7 +49,7 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
       threshold,
     );
   });
-  test('[2] Successfully throws 401 unauthorized status code for blacklisted.', async () => {
+  test('[2] Successfully throws 401 unauthorized status code for blacklisted jwt.', async () => {
     await deleteJwt();
     const loginUrl = '/api/auth/login';
     const res: request.Response = await request(app.getHttpServer())
@@ -98,7 +110,7 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
     expect(res.body).toMatchObject({
       message_subject: {
         minLength: 'Subject Must Exceed 4 Characters.',
-        isAlphanumeric: 'Subject Must Only Contain Letters And/Or Numbers.',
+        matches: 'Subject Must Only Contain Letters And/Or Numbers.',
         isString: 'Must Be A String.',
         isNotEmpty: 'Subject Is Required.',
       },
@@ -108,11 +120,11 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
         isNotEmpty: 'Text Is Required.',
       },
       message_sender_id: {
-        isNumber: 'Must Be A Number.',
+        isNumberString: 'Must Be A Number.',
         isNotEmpty: 'Sender Is Required.',
       },
       message_recipient_id: {
-        isNumber: 'Must Be A Number.',
+        isNumberString: 'Must Be A Number.',
         isNotEmpty: 'Recipient Is Required.',
       },
     });
@@ -125,16 +137,64 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
       .send({ username: 'jacoblang11', password: 'helloWorld?11' });
     const token = loginRes.body.token;
     const correctRequestBody = {
-      message_subject: 'introductory call 1',
+      message_subject: 'introductory call',
       message_text:
         'Hello Jim, I was wanting to schedule an introductory call this friday at 5:00pm, please let me know if this works for you.',
-      message_recipient_id: 1,
-      message_sender_id: 1,
+      message_recipient_id: '1',
+      message_sender_id: '1',
     };
     const res: request.Response = await request(app.getHttpServer())
       .post(url)
       .set({ authorization: token })
       .send(correctRequestBody);
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('File is required');
+  });
+  test('[6] Successfully attaches files and content to the request and returns the content back.', async () => {
+    await deleteJwt();
+    const loginUrl = '/api/auth/login';
+    const loginRes = await request(app.getHttpServer())
+      .post(loginUrl)
+      .send({ username: 'jacoblang11', password: 'helloWorld?11' });
+    const token = loginRes.body.token;
+    const correctRequestBody = {
+      message_subject: 'introductory call',
+      message_text:
+        'Hello Jim, I was wanting to schedule an introductory call this friday at 5:00pm, please let me know if this works for you.',
+      message_recipient_id: 1,
+      message_sender_id: 1,
+    };
+    // const files = [test_docx, test_jpg, test_odt, test_pdf, test_png];
+    const res: request.Response = await request(app.getHttpServer())
+      .post(url)
+      .field('message_sender_id', 1)
+      .field('message_recipient_id', 1)
+      .field('message_subject', correctRequestBody.message_subject)
+      .field('message_text', correctRequestBody.message_text)
+      .attach(
+        'files',
+        Buffer.from('./test-files/valid-files/test.jpg'),
+        './test-files/valid-files/test.jpg',
+      )
+      .attach(
+        'files',
+        Buffer.from('./test-files/valid-files/test.pdf'),
+        './test-files/valid-files/test.pdf',
+      )
+      .attach(
+        'files',
+        Buffer.from('./test-files/valid-files/test.png'),
+        './test-files/valid-files/test.png',
+      )
+      .attach(
+        'files',
+        Buffer.from('./test-files/valid-files/test.pdf'),
+        './test-files/valid-files/test.pdf',
+      )
+      .set({ authorization: token });
     console.log(res.body);
+    expect(res.status).toBe(201);
+    expect(Array.isArray(res.body)).toBeTruthy();
+    expect(res.body).toHaveLength(5);
   });
 });

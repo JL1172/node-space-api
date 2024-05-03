@@ -74,6 +74,10 @@
       "json",
       "ts"
     ],
+    "transformIgnorePatterns": [
+      "/node_modules/",
+      "\\.(docx)$"
+    ],
     "verbose": true,
     "rootDir": "src",
     "testRegex": ".*\\.test\\.ts$",

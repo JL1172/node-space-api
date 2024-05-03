@@ -37,10 +37,11 @@ export class CustomerController {
   @Post('/draft-message-to-customer')
   @UseInterceptors(FilesInterceptor('files'), ValidateDraftMessageBody)
   public async draftMessageToCustomer(
+    @Body() body: any,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
-          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|pdf|docx|odt)' }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|pdf)' }),
           new MaxFileSizeValidator({ maxSize: 500000 }),
         ],
       }),
@@ -48,7 +49,7 @@ export class CustomerController {
     files: Array<Express.Multer.File>,
   ): Promise<Record<string, any>> {
     //just return the preview of the message
-    return { files };
+    return [...files, body];
   }
   //todo
   //send drafted message to ai in order to get enhanced message
