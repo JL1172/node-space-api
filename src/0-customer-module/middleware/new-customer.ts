@@ -36,7 +36,7 @@ export class ValidateTokenIsNotBlacklisted implements NestMiddleware {
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.headers.authorization === undefined) {
+      if (!req.headers.authorization) {
         this.errorHandler.reportError(
           'Token Required.',
           HttpStatus.UNAUTHORIZED,

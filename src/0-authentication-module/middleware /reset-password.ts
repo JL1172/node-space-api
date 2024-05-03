@@ -72,7 +72,7 @@ export class ValidateResetPasswordHeaders implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     try {
       const token = req.headers['authorization'];
-      if (token === null) {
+      if (!token) {
         this.errorHander.reportHttpError(
           'Token Is Required.',
           HttpStatus.UNPROCESSABLE_ENTITY,
@@ -119,6 +119,12 @@ export class ValidateTokenIsNotBlacklisted implements NestMiddleware {
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.headers.authorization) {
+        this.errorHander.reportHttpError(
+          'Token Required.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       const token = await this.prisma.getJwtByToken(
         req.headers['authorization'],
       );
