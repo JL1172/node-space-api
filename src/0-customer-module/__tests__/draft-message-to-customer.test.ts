@@ -192,7 +192,6 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
         './test-files/valid-files/test.pdf',
       )
       .set({ authorization: token });
-    console.log(res.body);
     expect(res.status).toBe(201);
     expect(Array.isArray(res.body)).toBeTruthy();
     expect(res.body).toHaveLength(5);
