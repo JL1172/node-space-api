@@ -44,7 +44,6 @@ class Env {
 }
 async function preCommitTestScript(): Promise<void> {
   console.log(process.env.DATABASE_URL);
-  process.exit(1);
   try {
     const envVariables: string[] = [
       process.env.DATABASE_URL,
