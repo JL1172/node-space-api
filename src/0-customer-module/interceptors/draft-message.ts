@@ -17,9 +17,9 @@ export class ValidateDraftMessageBody implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler<any>) {
     const ctx = context.switchToHttp();
     const req = ctx.getRequest<Request>();
-    const objectToCOmpare = plainToClass(DraftedMessageBody, req.body);
+    const objectToCompare = plainToClass(DraftedMessageBody, req.body);
     try {
-      await validateOrReject(objectToCOmpare, {
+      await validateOrReject(objectToCompare, {
         whitelist: true,
         forbidNonWhitelisted: true,
       });
@@ -31,4 +31,3 @@ export class ValidateDraftMessageBody implements NestInterceptor {
     }
   }
 }
-
