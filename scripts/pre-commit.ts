@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import 'dotenv/config';
+import * as readline from 'readline-sync';
 
 class Env {
   //field instances
@@ -13,7 +14,7 @@ class Env {
   ] as const;
   private static readonly blacklistedFiles: string[] = [
     '.env',
-    // 'scripts/pre-commit.ts',
+    'scripts/pre-commit.ts',
   ] as const;
   private static readonly backlistedPatterns: RegExp[] = [
     new RegExp(process.env.DATABASE_URL),
@@ -73,9 +74,14 @@ async function preCommitTestScript(): Promise<void> {
         );
       }
       if (Env.isFileBlacklisted(STAGED_FILES[i]) === true) {
-        throw new Error(
-          `File: ${STAGED_FILES[i]} disallowed from being staged.`,
+        const password: string = readline.question(
+          `Enter Password To Authorize Commit With Change To ${STAGED_FILES[i]}`,
         );
+        if (password !== 'yes') {
+          throw new Error(
+            `File: ${STAGED_FILES[i]} disallowed from being staged.`,
+          );
+        }
       }
     }
   } catch (err) {
