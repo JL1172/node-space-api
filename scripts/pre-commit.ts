@@ -102,3 +102,36 @@ async function preCommitTestScript(): Promise<void> {
 //finished
 preCommitTestScript();
 process.exit(0);
+
+/*
+//   GNU nano 7.2                                                                                          pre-commit                                                                                                   
+#!/bin/sh
+# This is a simple pre-commit hook that runs a Node.js script
+
+commit_message=$(git log --format=%B -n 1 HEAD)
+
+npx ts-node scripts/pre-commit.ts
+
+if [ $? -ne 0 ]; then
+  echo "Node.js script failed. Aborting pre-commit."
+  exit 1
+fi
+
+if echo "$commit_message" | grep -q 'NOTEST'; then
+npm run test:all
+
+# Check if the tests completed successfully
+if [ $? -ne 0 ]; then
+  echo "Tests failed. Aborting pre-commit."
+  exit 1
+fi
+else
+echo "skipping tests due to NOTEST flag"
+fi
+
+# Exit with the status returned by the Node.js script
+exit 0
+
+
+
+*/
