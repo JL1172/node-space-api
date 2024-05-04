@@ -43,6 +43,10 @@ class Env {
   }
 }
 async function preCommitTestScript(): Promise<void> {
+  const yesOrNo: string | boolean = readline.keyInYN(
+    'Note, You Need To pull all remote changes to local, this is your reminder. Do you still wish to proceed?',
+  );
+  if (!yesOrNo) process.exit(1);
   try {
     const envVariables: string[] = [
       process.env.DATABASE_URL,
