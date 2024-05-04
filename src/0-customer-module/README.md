@@ -11,7 +11,7 @@
              3. optional attachments
              4. recipient
              5. sender (for configuration purposes of nodemailer)
-             6. implement ai sprucing of the message at the end, and then have it present an alternate suggested message. 
+             6. (look into cost) implement ai sprucing of the message at the end, and then have it present an alternate suggested message. 
     - [ ] on successful posting of the message, you will recieve the original message with a prompting to have ai improve the message with the next endpoint (optional)
     - [ ] create /ai-message-recommendation endpoint that uses ai to enhance the message. (optional)
     - [ ] on success of everything, there will be a /send-customer-message post endpoint to send final message to customer. 
