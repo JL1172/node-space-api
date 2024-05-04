@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, exec } from 'child_process';
 import * as fs from 'fs';
 import 'dotenv/config';
 import * as readline from 'readline-sync';
@@ -94,8 +94,17 @@ async function preCommitTestScript(): Promise<void> {
     );
     if (yN) {
       console.log('Preparing To Run Tests:');
-      execSync('npm run test:all');
+      console.log(process.cwd());
+      exec('npm run test:all', (error, stdout, stderr) => {
+        if (error) {
+          throw new Error(error + '');
+        } else {
+          console.log('stdout: ', stdout);
+          console.log('stderr: ', stderr);
+        }
+      });
     }
+    process.exit();
   } catch (err) {
     console.error('An Unexpected Error Occurred: ', err);
     process.exit(1);
