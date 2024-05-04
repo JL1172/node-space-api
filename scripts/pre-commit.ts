@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import util from 'util';
 import fs from 'fs';
+import 'dotenv/config';
 
 class Env {
   //field instances
@@ -41,8 +42,9 @@ class Env {
     return false;
   }
 }
-
 async function preCommitTestScript(): Promise<void> {
+  console.log(process.env.DATABASE_URL);
+  process.exit(1);
   try {
     const envVariables: string[] = [
       process.env.DATABASE_URL,
@@ -61,6 +63,7 @@ async function preCommitTestScript(): Promise<void> {
   } catch (err) {
     console.error('An Unexpected Error Occurred: ', err);
     console.trace('stack trace: ', err);
+    process.exit(1);
   }
 }
 
