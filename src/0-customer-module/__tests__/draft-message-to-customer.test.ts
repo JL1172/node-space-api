@@ -4,18 +4,6 @@ import { AppModule } from '../../app.module';
 import * as request from 'supertest';
 import { maxRateLimitForDraftMessageEndpoint } from '../middleware/draft-message';
 import { deleteJwt } from '../../../prisma/deleteJwt';
-/*
-//@ts-expect-error cannot resolve type of test file
-import test_docx from './test-files/valid-files/test.docx';
-//@ts-expect-error cannot resolve type of test file
-import test_jpg from './test-files/valid-files/test.jpg';
-//@ts-expect-error cannot resolve type of test file
-import test_odt from './test-files/valid-files/test.odt';
-//@ts-expect-error cannot resolve type of test file
-import test_pdf from './test-files/valid-files/test.pdf';
-//@ts-expect-error cannot resolve type of test file
-import test_png from './test-files/valid-files/.test.png';
-*/
 
 describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-customer]', () => {
   let app: INestApplication;
