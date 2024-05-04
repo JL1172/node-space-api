@@ -1,6 +1,5 @@
 import { execSync } from 'child_process';
-import util from 'util';
-import fs from 'fs';
+import * as fs from 'fs';
 import 'dotenv/config';
 
 class Env {
@@ -14,7 +13,7 @@ class Env {
   ] as const;
   private static readonly blacklistedFiles: string[] = [
     '.env',
-    'pre-commit.ts',
+    // 'scripts/pre-commit.ts',
   ] as const;
   private static readonly backlistedPatterns: RegExp[] = [
     new RegExp(process.env.DATABASE_URL),
@@ -35,7 +34,7 @@ class Env {
   public static isCodeBlacklisted(codeSnippit: string): boolean {
     const n = this.backlistedPatterns.length;
     for (let i: number = 0; i < n; i++) {
-      if (!this.backlistedPatterns[i].test(codeSnippit)) {
+      if (this.backlistedPatterns[i].test(codeSnippit)) {
         return true;
       }
     }
@@ -43,7 +42,6 @@ class Env {
   }
 }
 async function preCommitTestScript(): Promise<void> {
-  console.log(process.env.DATABASE_URL);
   try {
     const envVariables: string[] = [
       process.env.DATABASE_URL,
@@ -59,9 +57,29 @@ async function preCommitTestScript(): Promise<void> {
         throw new Error(`Environment variable ${envVarMissing} is undefined.`);
       }
     }
+    const STAGED_FILES: string[] = execSync('git diff --staged --name-only', {
+      encoding: 'utf-8',
+    })
+      .split('\n')
+      .filter((n) => n);
+    const stagedFileArrLength: number = STAGED_FILES.length;
+    for (let i: number = 0; i < stagedFileArrLength; i++) {
+      const fileContent = fs.readFileSync(STAGED_FILES[i], {
+        encoding: 'utf-8',
+      });
+      if (Env.isCodeBlacklisted(fileContent) === true) {
+        throw new Error(
+          `File ${STAGED_FILES[i]} contains disallowed patterns. Verify no env variables are being leaked.`,
+        );
+      }
+      if (Env.isFileBlacklisted(STAGED_FILES[i]) === true) {
+        throw new Error(
+          `File: ${STAGED_FILES[i]} disallowed from being staged.`,
+        );
+      }
+    }
   } catch (err) {
     console.error('An Unexpected Error Occurred: ', err);
-    console.trace('stack trace: ', err);
     process.exit(1);
   }
 }
