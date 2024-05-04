@@ -1,13 +1,11 @@
 import axios from 'axios';
-
+import 'dotenv/config';
 async function run(text) {
   try {
-    const response = await axios.post(
-      'https://api.sapling.ai/api/v1/paraphrase',
-      {
-        text,
-      },
-    );
+    const response = await axios.post(String(process.env.SAPLING_API_URL), {
+      key: process.env.SAPLING_API_KEY,
+      text,
+    });
     const { status, data } = response;
     console.log({ status });
     console.log(JSON.stringify(data, null, 4));

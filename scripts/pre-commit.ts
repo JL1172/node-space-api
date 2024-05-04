@@ -11,6 +11,8 @@ class Env {
     'GMAIL',
     'GMAIL_PASS',
     'JWT_SECRET',
+    'SAPLING_API_KEY',
+    'SAPLING_API_URL',
   ] as const;
   private static readonly blacklistedFiles: string[] = [
     '.env',
@@ -22,6 +24,8 @@ class Env {
     new RegExp(process.env.GMAIL),
     new RegExp(process.env.GMAIL_PASS),
     new RegExp(process.env.JWT_SECRET),
+    new RegExp(process.env.SAPLING_API_KEY),
+    new RegExp(process.env.SAPLING_API_URL),
   ] as const;
   //avoid computing more than once
   private static readonly n = this.envVariableErrorResponses.length - 1;
