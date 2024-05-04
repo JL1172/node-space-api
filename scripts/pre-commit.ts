@@ -93,12 +93,37 @@ async function preCommitTestScript(): Promise<void> {
         }
       }
     }
+    const proceedWithTests: boolean | string = readline.keyInYN(
+      'Proceed With Automated Tests?',
+    );
+    if (proceedWithTests) {
+      process.exit(7);
+    }
   } catch (err) {
     console.error('An Unexpected Error Occurred: ', err);
     process.exit(1);
   }
 }
 
-//finished
 preCommitTestScript();
 process.exit(0);
+
+/*
+#!/bin/sh
+
+npx ts-node scripts/pre-commit.ts
+
+if [ $? -eq 7 ]; then
+  npm run test:all
+  if [ $? -ne 0 ]; then
+  echo "Tests failed. Aborting pre-commit."
+  exit 1
+  else
+  echo "Tests passed, proceeding with commit."
+  fi
+fi
+if [ $? -ne 7 || $? -ne 0 ]; then 
+  echo "Node script error. Aborting pre-commit."
+  exit 1
+fi
+*/
