@@ -89,6 +89,13 @@ async function preCommitTestScript(): Promise<void> {
         }
       }
     }
+    const yN: string | boolean = readline.keyInYN(
+      'Proceeding With Automated Tests, Want To Continue?',
+    );
+    if (yN) {
+      console.log('Preparing To Run Tests:');
+      execSync('npm run test:all');
+    }
   } catch (err) {
     console.error('An Unexpected Error Occurred: ', err);
     process.exit(1);
