@@ -75,7 +75,8 @@ async function preCommitTestScript(): Promise<void> {
       }
       if (Env.isFileBlacklisted(STAGED_FILES[i]) === true) {
         const password: string = readline.question(
-          `Enter Password To Authorize Commit With Change To ${STAGED_FILES[i]}`,
+          `Enter Password To Authorize Commit With Change To ${STAGED_FILES[i]}: `,
+          { hideEchoBack: true },
         );
         if (password !== 'yes') {
           throw new Error(
