@@ -11,6 +11,9 @@ import { plainToClass } from 'class-transformer';
 import { DraftedMessageBody } from '../dtos/DraftedMessageBody';
 import { validateOrReject } from 'class-validator';
 import * as validator from 'validator';
+import { CustomerPrismaProvider } from '../providers/prisma';
+import { Customer } from '@prisma/client';
+import { JwtProvider } from '../providers/jwt';
 
 @Injectable()
 export class ValidateDraftMessageBody implements NestInterceptor {
@@ -62,6 +65,37 @@ export class SanitizeDraftMessageBody implements NestInterceptor {
       this.errorHandler.reportError(
         'An Unexpected Problem Occurred While Trying To Parse The Email Content.',
         HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+  }
+}
+
+@Injectable()
+export class ValidateRecipientId implements NestInterceptor {
+  constructor(
+    private readonly errorHandler: CustomerErrorHandler,
+    private readonly prisma: CustomerPrismaProvider,
+    private readonly jwt: JwtProvider,
+  ) {}
+  async intercept(context: ExecutionContext, next: CallHandler<any>) {
+    try {
+      const ctx = context.switchToHttp();
+      const req = ctx.getRequest<Request>();
+      const body: DraftedMessageBody = req.body;
+      const isRecipientValid: Customer = await this.prisma.getCustomerById(
+        Number(body.message_recipient_id),
+      );
+      if (!isRecipientValid) {
+        this.errorHandler.reportError(
+          `Customer Does Not Exist, Verify Validity Of Customer.`,
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      return next.handle();
+    } catch (err) {
+      this.errorHandler.reportError(
+        err.message,
+        err?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

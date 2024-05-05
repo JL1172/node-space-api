@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Customer, JwtToken, PrismaClient } from '@prisma/client';
+import { Customer, JwtToken, PrismaClient, User } from '@prisma/client';
 import { SingletonPrismaProvider } from '../../global/global-utils/providers/singleton-prisma';
 import {
   NewCustomerBody,
@@ -11,6 +11,12 @@ export class CustomerPrismaProvider {
   private readonly prisma: PrismaClient;
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
+  }
+  public async getUserById(id: number): Promise<User> {
+    return await this.prisma.user.findUnique({ where: { id } });
+  }
+  public async getCustomerById(id: number): Promise<Customer> {
+    return await this.prisma.customer.findUnique({ where: { id } });
   }
   public async getJwtByToken(token: string): Promise<JwtToken> {
     return await this.prisma.jwtToken.findUnique({

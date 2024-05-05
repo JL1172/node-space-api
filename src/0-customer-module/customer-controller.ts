@@ -19,9 +19,12 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   SanitizeDraftMessageBody,
   ValidateDraftMessageBody,
+  ValidateRecipientId,
 } from './interceptors/draft-message';
 import { FileUtilProvider } from './providers/file-parsing';
 import { CustomerErrorHandler } from './providers/error';
+import { SaplingClient } from './providers/sapling-client';
+import { DraftedMessageBody } from './dtos/DraftedMessageBody';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -30,6 +33,7 @@ export class CustomerController {
     private readonly jwt: JwtProvider,
     private readonly fileUtil: FileUtilProvider,
     private readonly errorHandler: CustomerErrorHandler,
+    private readonly saplingClient: SaplingClient,
   ) {}
   @Post('/create-new-customer')
   public async createNewCustomer(
@@ -41,28 +45,29 @@ export class CustomerController {
     return 'Successfully Created Customer.';
   }
   //todo
-  //draft message to customer
   /*
-   1. rate limit (j)
-   2. validate that a jwt is present in the authorization (j)
-   3. validate jwt is not blacklisted in db (j)
-   4. validate jwt is valid (j)
-   5. validate that a files array is present and the request body is correct (j)
-   6. validate size and mime type of file (j)
-   7. sanitize the request body (j)
-   8. sanitize the file names (j)
-   9. validate magic numbers with their correct magic numbers (j)
-   10. validate png and jpeg files (j)
-   11. validate customer with id exists and sender with id exists and matches jwt token 
-  */
+   * rate limit
+   * verify jwt is not blacklisted
+   * validate jwt
+   * validate request body (message_content etc.)
+   * sanitize request body
+   * validate recipient id exists in db (determined to just ignore sender id because that will come from jwt decoded)
+   * validate files exist
+   * validate mime type of files
+   * validate size of files
+   * sanitize file names
+   * validate magic numbers, then proceed to parsing jpeg jpg and png, if none of those, called cloudmersive api to validate pdf, if not true, throw error
+   * return originalMessage and then rephrased message
+   */
   @Post('/draft-message-to-customer')
   @UseInterceptors(
     FilesInterceptor('files'),
     ValidateDraftMessageBody,
     SanitizeDraftMessageBody,
+    ValidateRecipientId,
   )
   public async draftMessageToCustomer(
-    @Body() body: any,
+    @Body() body: DraftedMessageBody,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -79,20 +84,19 @@ export class CustomerController {
       for (let i: number = 0; i < filesToReturn.length; i++) {
         await this.fileUtil.validateFile(filesToReturn[i]);
       }
-      return [...filesToReturn, body];
+      const newMessage = await this.saplingClient.getRephrasedMessage(
+        body.message_text,
+      );
+      const suggestedMessages = newMessage.data.results.map(
+        (n) => n.replacement,
+      );
+      return { originalMessage: body, suggestedMessages };
     } catch (err) {
       this.errorHandler.reportError(
         err,
         err.status || HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-  }
-  //todo
-  //send drafted message to ai in order to get enhanced message
-  @Post('/ai-message-recommendation')
-  public async getAiRecommendation(): Promise<string> {
-    //return the preview of the ai message and the original
-    return 'Here is your message and the ai recommended message.';
   }
   //todo
   //validate and sanitize again

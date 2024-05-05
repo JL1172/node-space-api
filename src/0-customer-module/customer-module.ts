@@ -17,6 +17,7 @@ import {
 } from './middleware/draft-message';
 import { FileUtilProvider } from './providers/file-parsing';
 import { Cloudmersive } from './providers/cloudmersive-client';
+import { SaplingClient } from './providers/sapling-client';
 
 @Module({
   imports: [],
@@ -26,6 +27,7 @@ import { Cloudmersive } from './providers/cloudmersive-client';
     JwtProvider,
     FileUtilProvider,
     Cloudmersive,
+    SaplingClient,
   ],
   controllers: [CustomerController],
 })
