@@ -15,10 +15,16 @@ import {
   DraftMessageRateLimit,
   VerifyJwtIsValidForDraftMessageToCustomerEndpoint,
 } from './middleware/draft-message';
+import { FileUtilProvider } from './providers/file-parsing';
 
 @Module({
   imports: [],
-  providers: [CustomerErrorHandler, CustomerPrismaProvider, JwtProvider],
+  providers: [
+    CustomerErrorHandler,
+    CustomerPrismaProvider,
+    JwtProvider,
+    FileUtilProvider,
+  ],
   controllers: [CustomerController],
 })
 export class CustomerModule implements NestModule {

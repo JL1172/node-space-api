@@ -105,5 +105,6 @@ async function preCommitTestScript(): Promise<void> {
   }
 }
 
+//end
 preCommitTestScript();
 process.exit(0);

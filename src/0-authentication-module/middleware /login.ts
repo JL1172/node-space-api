@@ -58,8 +58,8 @@ export class SanitizeLoginBody implements NestMiddleware {
     const body: LoginBody = req.body;
     const keys: string[] = ['username', 'password'];
     keys.forEach((n) => {
-      body[n] = this.validator.escape(body[n]);
       body[n] = this.validator.trim(body[n]);
+      body[n] = this.validator.escape(body[n]);
       body[n] = this.validator.blacklist(
         body[n],
         /[\x00-\x1F\s;'"\\<>]/.source,

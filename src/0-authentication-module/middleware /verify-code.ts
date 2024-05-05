@@ -57,8 +57,8 @@ export class SanitizeVerificationCodeBody implements NestMiddleware {
     try {
       const keys: string[] = ['email', 'verification_code'];
       keys.forEach((n) => {
-        req.body[n] = this.validate.escape(req.body[n]);
         req.body[n] = this.validate.trim(req.body[n]);
+        req.body[n] = this.validate.escape(req.body[n]);
         req.body[n] = this.validate.blacklist(
           req.body[n],
           /[\x00-\x1F\s;'"\\<>]/.source,
