@@ -76,6 +76,8 @@ export class CustomerController {
       const filesToReturn: Array<Express.Multer.File> =
         await this.fileUtil.validateFiles(files);
       //just return the preview of the message
+      // return [...filesToReturn, body];
+      //todo need to finish png parsing potentially look for another option, png api?? parses correctly on hot refresh not anytime after, jpg is no problem
       return [...filesToReturn, body];
     } catch (err) {
       this.errorHandler.reportError(err, err.status);

@@ -15,7 +15,7 @@ export class FileUtilProvider {
   //jpeg and jpg magic no.
   private readonly magic_jpeg_jpg_no: string = 'FFD8FFE0' as const;
   //png dependency
-  private readonly png: PNG = new PNG();
+  private readonly png: PNG = new PNG({ filterType: 4 });
   //jpg dependency
   private readonly jpg: typeof jpeg = jpeg;
   //finalfiles
@@ -46,9 +46,9 @@ export class FileUtilProvider {
       .toString('hex')
       .toUpperCase();
     if (this.magic_png_no === buffer) {
-      console.log('1', buffer);
+      console.log('1', file.originalname);
       await new Promise((resolve, reject) => {
-        this.png.parse(file.buffer, (error, data) => {
+        this.png.parse(Buffer.from(file.buffer), (error, data) => {
           if (error) {
             console.log(error);
             reject(
@@ -87,12 +87,9 @@ export class FileUtilProvider {
       //sanitized names
       const sanitizedFiles: Array<Express.Multer.File> =
         this.sanitizeFileName(unsanitizedFiles);
-      //grab length to avoid recomputing every iteration
-      const lengthOfSanitizedFiles: number = sanitizedFiles.length;
       //for loop for validate method
-      for (let i: number = 0; i < lengthOfSanitizedFiles; i++) {
-        const currentSanitizedFile = sanitizedFiles[i];
-        await this.validateFile(currentSanitizedFile);
+      for (const img of sanitizedFiles) {
+        await this.validateFile(img);
       }
       return sanitizedFiles;
     } catch (err) {
