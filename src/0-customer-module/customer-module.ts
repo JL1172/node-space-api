@@ -16,6 +16,7 @@ import {
   VerifyJwtIsValidForDraftMessageToCustomerEndpoint,
 } from './middleware/draft-message';
 import { FileUtilProvider } from './providers/file-parsing';
+import { Cloudmersive } from './providers/cloudmersive-client';
 
 @Module({
   imports: [],
@@ -24,6 +25,7 @@ import { FileUtilProvider } from './providers/file-parsing';
     CustomerPrismaProvider,
     JwtProvider,
     FileUtilProvider,
+    Cloudmersive,
   ],
   controllers: [CustomerController],
 })

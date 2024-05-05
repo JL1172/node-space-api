@@ -13,6 +13,7 @@ class Env {
     'JWT_SECRET',
     'SAPLING_API_KEY',
     'SAPLING_API_URL',
+    'CLOUDMERSIVE_API_KEY',
   ] as const;
   private static readonly blacklistedFiles: string[] = [
     '.env',
@@ -26,6 +27,7 @@ class Env {
     new RegExp(process.env.JWT_SECRET),
     new RegExp(process.env.SAPLING_API_KEY),
     new RegExp(process.env.SAPLING_API_URL),
+    new RegExp(process.env.CLOUDMERSIVE_API_KEY),
   ] as const;
   //avoid computing more than once
   private static readonly n = this.envVariableErrorResponses.length - 1;
@@ -58,6 +60,7 @@ async function preCommitTestScript(): Promise<void> {
       process.env.GMAIL,
       process.env.GMAIL_PASS,
       process.env.JWT_SECRET,
+      process.env.CLOUDMERSIVE_API_KEY,
     ];
     const n = envVariables.length;
     for (let i: number = 0; i < n; i++) {

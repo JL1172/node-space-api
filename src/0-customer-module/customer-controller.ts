@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   FileTypeValidator,
+  HttpStatus,
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
@@ -49,9 +50,9 @@ export class CustomerController {
    5. validate that a files array is present and the request body is correct (j)
    6. validate size and mime type of file (j)
    7. sanitize the request body (j)
-   8. sanitize the file names 
-   9. validate magic numbers with their correct magic numbers
-   10. validate png and jpeg files
+   8. sanitize the file names (j)
+   9. validate magic numbers with their correct magic numbers (j)
+   10. validate png and jpeg files (j)
    11. validate customer with id exists and sender with id exists and matches jwt token 
   */
   @Post('/draft-message-to-customer')
@@ -66,7 +67,7 @@ export class CustomerController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({ fileType: '.(png|jpeg|jpg|pdf)' }),
-          new MaxFileSizeValidator({ maxSize: 500000 }),
+          new MaxFileSizeValidator({ maxSize: 5000000 }),
         ],
       }),
     )
@@ -74,13 +75,16 @@ export class CustomerController {
   ): Promise<Record<string, any>> {
     try {
       const filesToReturn: Array<Express.Multer.File> =
-        await this.fileUtil.validateFiles(files);
-      //just return the preview of the message
-      // return [...filesToReturn, body];
-      //todo need to finish png parsing potentially look for another option, png api?? parses correctly on hot refresh not anytime after, jpg is no problem
+        this.fileUtil.sanitizeFileName(files);
+      for (let i: number = 0; i < filesToReturn.length; i++) {
+        await this.fileUtil.validateFile(filesToReturn[i]);
+      }
       return [...filesToReturn, body];
     } catch (err) {
-      this.errorHandler.reportError(err, err.status);
+      this.errorHandler.reportError(
+        err,
+        err.status || HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
   }
   //todo

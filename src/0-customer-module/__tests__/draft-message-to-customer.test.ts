@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../app.module';
@@ -153,32 +154,24 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
       message_sender_id: 1,
     };
     // const files = [test_docx, test_jpg, test_odt, test_pdf, test_png];
+    const testJpg =
+      'src/0-customer-module/__tests__/test-files/valid-files/test.jpg';
+    const testPng =
+      'src/0-customer-module/__tests__/test-files/valid-files/test.png';
+    const testPng2 =
+      'src/0-customer-module/__tests__/test-files/valid-files/test.png';
+    const testPdf =
+      'src/0-customer-module/__tests__/test-files/valid-files/test.pdf';
     const res: request.Response = await request(app.getHttpServer())
       .post(url)
       .field('message_sender_id', 1)
       .field('message_recipient_id', 1)
       .field('message_subject', correctRequestBody.message_subject)
       .field('message_text', correctRequestBody.message_text)
-      .attach(
-        'files',
-        Buffer.from('./test-files/valid-files/test.jpg'),
-        './test-files/valid-files/test.jpg',
-      )
-      .attach(
-        'files',
-        Buffer.from('./test-files/valid-files/test.pdf'),
-        './test-files/valid-files/test.pdf',
-      )
-      .attach(
-        'files',
-        Buffer.from('./test-files/valid-files/test.png'),
-        './test-files/valid-files/test.png',
-      )
-      .attach(
-        'files',
-        Buffer.from('./test-files/valid-files/test.pdf'),
-        './test-files/valid-files/test.pdf',
-      )
+      .attach('files', fs.readFileSync(testJpg), testJpg)
+      .attach('files', fs.readFileSync(testPng2), testPng2)
+      .attach('files', fs.readFileSync(testPng), testPng)
+      .attach('files', fs.readFileSync(testPdf), testPdf)
       .set({ authorization: token });
     expect(res.status).toBe(201);
     expect(Array.isArray(res.body)).toBeTruthy();

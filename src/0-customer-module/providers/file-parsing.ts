@@ -1,21 +1,24 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import * as validator from 'validator';
-import { PNG } from 'pngjs';
 import * as jpeg from 'jpeg-js';
+import { PNG } from 'pngjs';
 import { CustomerErrorHandler } from './error';
+import { Cloudmersive } from './cloudmersive-client';
 
 //this class provider will just completely take care of sanitation and validation
 @Injectable()
 export class FileUtilProvider {
-  constructor(private readonly errorHandler: CustomerErrorHandler) {}
+  constructor(
+    private readonly errorHandler: CustomerErrorHandler,
+    private readonly cloudmersive: Cloudmersive,
+  ) {}
+  //cloudmersive
   //validator dependency
   private readonly validate: typeof validator = validator;
   //png magic numberr
   private readonly magic_png_no: string = '89504E470D0A1A0A' as const;
   //jpeg and jpg magic no.
   private readonly magic_jpeg_jpg_no: string = 'FFD8FFE0' as const;
-  //png dependency
-  private readonly png: PNG = new PNG({ filterType: 4 });
   //jpg dependency
   private readonly jpg: typeof jpeg = jpeg;
   //finalfiles
@@ -25,7 +28,7 @@ export class FileUtilProvider {
     return this.finalFiles;
   }
   //sanitize
-  private sanitizeFileName(
+  public sanitizeFileName(
     unsanitizedFile: Array<Express.Multer.File>,
   ): Array<Express.Multer.File> {
     this.finalFiles = unsanitizedFile.map((file: Express.Multer.File) => {
@@ -40,28 +43,24 @@ export class FileUtilProvider {
     return this.getFiles();
   }
   //validate magic number and binary data structure
-  private async validateFile(file: Express.Multer.File): Promise<void> {
-    const buffer: string = file.buffer
-      .subarray(0, 8)
-      .toString('hex')
-      .toUpperCase();
+  public async validateFile(file: Express.Multer.File): Promise<void | PNG> {
+    const buffer = file.buffer.subarray(0, 8).toString('hex').toUpperCase();
     if (this.magic_png_no === buffer) {
-      console.log('1', file.originalname);
       await new Promise((resolve, reject) => {
-        this.png.parse(Buffer.from(file.buffer), (error, data) => {
-          if (error) {
-            console.log(error);
-            reject(
-              `Invalid File Type For File ${file.originalname}, expected type ${file.mimetype}`,
-            );
-          } else {
-            resolve(data);
-          }
+        const png = new PNG();
+        png.on('parsed', () => {
+          resolve(png);
         });
+        png.on('error', (error) => {
+          console.log(error);
+          reject(
+            `Invalid File Type For File: ${file.originalname}, expected type PNG, JPEG, JPG`,
+          );
+        });
+        png.parse(file.buffer);
       });
     } else {
       if (this.magic_jpeg_jpg_no === buffer.slice(0, 8)) {
-        console.log('2', buffer);
         const isValidJpegOrJpg = this.jpg.decode(file.buffer, {
           useTArray: true,
         });
@@ -72,28 +71,14 @@ export class FileUtilProvider {
           );
         }
       } else {
-        console.log('3', buffer);
-        this.errorHandler.reportError(
-          'Invalid File Type, Cannot Parse File.',
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
+        const result = await this.cloudmersive.validatePdf(file.buffer);
+        if (result.data?.DocumentIsValid === false) {
+          this.errorHandler.reportError(
+            'Invalid File Type, Cannot Parse File.',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
       }
-    }
-  }
-  public async validateFiles(
-    unsanitizedFiles: Array<Express.Multer.File>,
-  ): Promise<Array<Express.Multer.File>> {
-    try {
-      //sanitized names
-      const sanitizedFiles: Array<Express.Multer.File> =
-        this.sanitizeFileName(unsanitizedFiles);
-      //for loop for validate method
-      for (const img of sanitizedFiles) {
-        await this.validateFile(img);
-      }
-      return sanitizedFiles;
-    } catch (err) {
-      this.errorHandler.reportError(err, HttpStatus.UNPROCESSABLE_ENTITY);
     }
   }
 }
