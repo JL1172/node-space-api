@@ -174,7 +174,8 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
       .attach('files', fs.readFileSync(testPdf), testPdf)
       .set({ authorization: token });
     expect(res.status).toBe(201);
-    expect(Array.isArray(res.body)).toBeTruthy();
-    expect(res.body).toHaveLength(5);
+    expect(res.body).toHaveProperty('originalMessage');
+    expect(res.body).toHaveProperty('suggestedMessages');
+    expect(Object.keys(res.body)).toHaveLength(2);
   });
 });
