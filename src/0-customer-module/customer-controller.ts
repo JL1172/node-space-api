@@ -124,9 +124,9 @@ export class CustomerController {
     try {
       const filesToReturn: Array<Express.Multer.File> =
         this.fileUtil.sanitizeFileName(files);
-      for (let i: number = 0; i < filesToReturn.length; i++) {
-        await this.fileUtil.validateFile(filesToReturn[i]);
-      }
+      // for (let i: number = 0; i < filesToReturn.length; i++) {
+      //   await this.fileUtil.validateFile(filesToReturn[i]);
+      // }
       //first insert message with:
       /**
        * message_subject
@@ -169,18 +169,23 @@ export class CustomerController {
         size: n.size,
         data: n.buffer,
       }));
-      await this.prisma.createMessage(
-        messageToInsertIntoDb,
-        filesToInsertIntoDb,
-      );
+      const filesToMail = filesToReturn.map((n) => ({
+        filename: n.originalname,
+        content: n.buffer,
+      }));
       await this.mailer.draftEmail(
         recipientEmail.email,
         body.message_subject,
         body.message_text,
-        files,
+        filesToMail,
+      );
+      await this.prisma.createMessage(
+        messageToInsertIntoDb,
+        filesToInsertIntoDb,
       );
       return `Successfully Sent Message To ${recipientEmail.email}`;
     } catch (err) {
+      console.log(err);
       this.errorHandler.reportError(
         err,
         err.status || HttpStatus.UNPROCESSABLE_ENTITY,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as nodemail from 'nodemailer';
 
 @Injectable()
@@ -15,23 +15,27 @@ export class Mailer {
     email: string,
     subject: string,
     text: string,
-    attachments?: Array<Express.Multer.File>,
+    attachments?: { filename: string; content: Buffer }[],
   ): Promise<void> {
-    const mailOptions = {
-      from: process.env.GMAIL,
-      to: email,
-      subject: subject,
-      text,
-      attachments,
-    };
-    return await new Promise((resolve, reject) =>
-      this.nodemailer.sendMail(mailOptions, (error: unknown) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      }),
-    );
+    try {
+      const mailOptions = {
+        from: process.env.GMAIL,
+        to: email,
+        subject: subject,
+        text,
+        attachments,
+      };
+      return await new Promise((resolve, reject) =>
+        this.nodemailer.sendMail(mailOptions, (error: unknown) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        }),
+      );
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
