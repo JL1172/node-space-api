@@ -14,17 +14,17 @@ datasource db {
 }
 
 model User {
-  id                  Int                @id @default(autoincrement())
-  created_at          DateTime?          @default(now())
-  email               String             @unique
-  username            String             @unique
-  password            String
-  first_name          String
-  last_name           String
-  age                 Int
-  VerificationCode    VerificationCode[]
-  Customer            Customer[]
-  Message             Message[]
+  id               Int                @id @default(autoincrement())
+  created_at       DateTime?          @default(now())
+  email            String             @unique
+  username         String             @unique
+  password         String
+  first_name       String
+  last_name        String
+  age              Int
+  VerificationCode VerificationCode[]
+  Customer         Customer[]
+  Message          Message[]
 }
 
 model VerificationCode {
@@ -66,13 +66,24 @@ model Customer {
 }
 
 model Message {
-  id                   Int       @id @default(autoincrement())
+  id                   Int            @id @default(autoincrement())
   message_subject      String
   message_text         String
-  message_media        Bytes?
+  message_media        MessageMedia[]
   message_sender_id    Int
-  message_sender       User      @relation(fields: [message_sender_id], references: [id])
+  message_sender       User           @relation(fields: [message_sender_id], references: [id])
   message_recipient_id Int
-  message_recipient    Customer  @relation(fields: [message_recipient_id], references: [id])
-  created_at           DateTime? @default(now())
+  message_recipient    Customer       @relation(fields: [message_recipient_id], references: [id])
+  created_at           DateTime?      @default(now())
+}
+
+model MessageMedia {
+  id         Int       @id @default(autoincrement())
+  mime_type  String
+  filename   String
+  size       Int
+  data       Bytes
+  message_id Int
+  message    Message   @relation(fields: [message_id], references: [id])
+  created_at DateTime? @default(now())
 }

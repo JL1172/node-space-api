@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Customer, JwtToken, PrismaClient, User } from '@prisma/client';
+import {
+  Customer,
+  JwtToken,
+  Message,
+  PrismaClient,
+  User,
+} from '@prisma/client';
 import { SingletonPrismaProvider } from '../../global/global-utils/providers/singleton-prisma';
 import {
   NewCustomerBody,
@@ -12,11 +18,55 @@ export class CustomerPrismaProvider {
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
   }
+  public async createMessage(
+    messageDataToInsert: {
+      message_subject: string;
+      message_text: string;
+      message_sender_id: number;
+      message_recipient_id: number;
+    },
+    files: {
+      mime_type: string;
+      filename: string;
+      size: number;
+      data: Buffer;
+    }[],
+  ): Promise<void> {
+    //first insert message with:
+    /**
+     * message_subject
+     * message_text
+     * message_sender_id (from jwt token)
+     * message_recipient_id
+     */
+    //then create blog media with the message id that comes from creating message
+    /**
+     * mime_type
+     * filename
+     * size
+     * data
+     * message_id
+     */
+    const newlyCreatedMessage: Message = await this.prisma.message.create({
+      data: messageDataToInsert,
+    });
+    const message_id: number = newlyCreatedMessage.id;
+    const fileToInsertIntoDb: {
+      mime_type: string;
+      filename: string;
+      size: number;
+      data: Buffer;
+      message_id: number;
+    }[] = files.map((n) => ({ ...n, message_id }));
+    await this.prisma.messageMedia.createMany({
+      data: fileToInsertIntoDb,
+    });
+  }
   public async getUserById(id: number): Promise<User> {
-    return await this.prisma.user.findUnique({ where: { id } });
+    return await this.prisma.user.findUnique({ where: { id: Number(id) } });
   }
   public async getCustomerById(id: number): Promise<Customer> {
-    return await this.prisma.customer.findUnique({ where: { id } });
+    return await this.prisma.customer.findUnique({ where: { id: Number(id) } });
   }
   public async getJwtByToken(token: string): Promise<JwtToken> {
     return await this.prisma.jwtToken.findUnique({

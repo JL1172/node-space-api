@@ -6,6 +6,7 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
+  Req,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -25,10 +26,13 @@ import { FileUtilProvider } from './providers/file-parsing';
 import { CustomerErrorHandler } from './providers/error';
 import { SaplingClient } from './providers/sapling-client';
 import { DraftedMessageBody } from './dtos/DraftedMessageBody';
+import { Request } from 'express';
+import { Mailer } from './providers/mailer';
 
 @Controller('/api/customer')
 export class CustomerController {
   constructor(
+    private readonly mailer: Mailer,
     private readonly prisma: CustomerPrismaProvider,
     private readonly jwt: JwtProvider,
     private readonly fileUtil: FileUtilProvider,
@@ -44,7 +48,6 @@ export class CustomerController {
     await this.prisma.createNewCustomer(newCustomer);
     return 'Successfully Created Customer.';
   }
-  //todo
   /*
    * rate limit
    * verify jwt is not blacklisted
@@ -98,10 +101,90 @@ export class CustomerController {
       );
     }
   }
-  //todo
-  //validate and sanitize again
   @Post('/send-customer-message')
-  public async sendCustomerMessage(): Promise<string> {
-    return 'Message Successfully Sent.';
+  @UseInterceptors(
+    FilesInterceptor('files'),
+    ValidateDraftMessageBody,
+    SanitizeDraftMessageBody,
+    ValidateRecipientId,
+  )
+  public async sendCustomerMessage(
+    @Body() body: DraftedMessageBody,
+    @Req() req: Request,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|pdf)' }),
+          new MaxFileSizeValidator({ maxSize: 5000000 }),
+        ],
+      }),
+    )
+    files: Array<Express.Multer.File>,
+  ): Promise<string> {
+    try {
+      const filesToReturn: Array<Express.Multer.File> =
+        this.fileUtil.sanitizeFileName(files);
+      for (let i: number = 0; i < filesToReturn.length; i++) {
+        await this.fileUtil.validateFile(filesToReturn[i]);
+      }
+      //first insert message with:
+      /**
+       * message_subject
+       * message_text
+       * message_sender_id (from jwt token)
+       * message_recipient_id
+       */
+      //then create blog media with the message id that comes from creating message
+      /**
+       * mime_type
+       * filename
+       * size
+       * data
+       * message_id
+       */
+      const recipientEmail = await this.prisma.getCustomerById(
+        body.message_recipient_id,
+      );
+      this.jwt.validateJwtToken(req.headers.authorization);
+      const id: number = this.jwt.getDecodedJwtToken().id;
+      const messageToInsertIntoDb: {
+        message_subject: string;
+        message_text: string;
+        message_sender_id: number;
+        message_recipient_id: number;
+      } = {
+        message_recipient_id: Number(recipientEmail.id),
+        message_subject: body.message_subject,
+        message_text: body.message_text,
+        message_sender_id: Number(id),
+      };
+      const filesToInsertIntoDb: {
+        mime_type: string;
+        filename: string;
+        size: number;
+        data: Buffer;
+      }[] = filesToReturn.map((n) => ({
+        filename: n.originalname,
+        mime_type: n.mimetype,
+        size: n.size,
+        data: n.buffer,
+      }));
+      await this.prisma.createMessage(
+        messageToInsertIntoDb,
+        filesToInsertIntoDb,
+      );
+      await this.mailer.draftEmail(
+        recipientEmail.email,
+        body.message_subject,
+        body.message_text,
+        files,
+      );
+      return `Successfully Sent Message To ${recipientEmail.email}`;
+    } catch (err) {
+      this.errorHandler.reportError(
+        err,
+        err.status || HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
   }
 }

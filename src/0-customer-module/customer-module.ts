@@ -18,6 +18,7 @@ import {
 import { FileUtilProvider } from './providers/file-parsing';
 import { Cloudmersive } from './providers/cloudmersive-client';
 import { SaplingClient } from './providers/sapling-client';
+import { Mailer } from './providers/mailer';
 
 @Module({
   imports: [],
@@ -28,6 +29,7 @@ import { SaplingClient } from './providers/sapling-client';
     FileUtilProvider,
     Cloudmersive,
     SaplingClient,
+    Mailer,
   ],
   controllers: [CustomerController],
 })
@@ -49,6 +51,9 @@ export class CustomerModule implements NestModule {
         ValidateTokenIsNotBlacklisted,
         VerifyJwtIsValidForDraftMessageToCustomerEndpoint,
       )
-      .forRoutes('/api/customer/draft-message-to-customer');
+      .forRoutes(
+        '/api/customer/draft-message-to-customer',
+        '/api/customer/send-customer-message',
+      );
   }
 }
