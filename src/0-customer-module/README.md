@@ -4,17 +4,17 @@
 
 1. [ ] message customers
    - [x] create message table on db
-   - [ ] create /draft-message-to-customer endpoint
-   - [ ] this endpoint will expect the following:
+   - [x] create /draft-message-to-customer endpoint
+   - [x] this endpoint will expect the following:
              1. subject
              2. text
              3. optional attachments
              4. recipient
              5. sender (for configuration purposes of nodemailer)
              6. (look into cost) implement ai sprucing of the message at the end, and then have it present an alternate suggested message. 
-    - [ ] on successful posting of the message, you will recieve the original message with a prompting to have ai improve the message with the next endpoint (optional)
-    - [ ] create /ai-message-recommendation endpoint that uses ai to enhance the message. (optional)
-    - [ ] on success of everything, there will be a /send-customer-message post endpoint to send final message to customer. 
+    - [x] on successful posting of the message, you will recieve the original message with a prompting to have ai improve the message with the next endpoint (optional)
+    - [x] create /ai-message-recommendation endpoint that uses ai to enhance the message. (optional)
+    - [x] on success of everything, there will be a /send-customer-message post endpoint to send final message to customer. 
 2. [ ] view messages with customers
 3. [ ] view past projects with customers
 4. [ ] view current projects with customers
