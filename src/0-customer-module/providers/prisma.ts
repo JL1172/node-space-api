@@ -11,6 +11,7 @@ import {
   NewCustomerBody,
   NewCustomerBodyToInsertIntoDb,
 } from '../dtos/NewCustomerBody';
+import { ParamBody, QueryBody } from '../dtos/ViewMessagesBodies';
 
 @Injectable()
 export class CustomerPrismaProvider {
@@ -62,11 +63,53 @@ export class CustomerPrismaProvider {
       data: fileToInsertIntoDb,
     });
   }
+
+  public async getMessagesWithQueryParams(
+    sender_id: number,
+    query: QueryBody,
+    params: ParamBody,
+  ) {
+    const result = await this.prisma.message.findMany({
+      where: {
+        message_sender_id: sender_id,
+        message_recipient_id: Number(params.id),
+      },
+      select: {
+        id: true,
+        message_recipient_id: true,
+        message_recipient: { select: { email: true } },
+        message_sender_id: true,
+        message_sender: { select: { email: true } },
+        message_subject: true,
+        message_text: true,
+        created_at: true,
+        message_media: {
+          select: {
+            filename: true,
+            data: true,
+            mime_type: true,
+          },
+        },
+      },
+      orderBy: { created_at: query.sortDir },
+      skip:
+        Number(query.page) > 1
+          ? Number(query.limit) * Number(query.page) - Number(query.limit)
+          : 0,
+      take: Number(query.limit),
+    });
+    return result;
+  }
   public async getUserById(id: number): Promise<User> {
     return await this.prisma.user.findUnique({ where: { id: Number(id) } });
   }
-  public async getCustomerById(id: number): Promise<Customer> {
-    return await this.prisma.customer.findUnique({ where: { id: Number(id) } });
+  public async getCustomerById(
+    id: number,
+    user_id_in_relation_to_customer: number,
+  ): Promise<Customer> {
+    return await this.prisma.customer.findUnique({
+      where: { id: Number(id), user_id: user_id_in_relation_to_customer },
+    });
   }
   public async getJwtByToken(token: string): Promise<JwtToken> {
     return await this.prisma.jwtToken.findUnique({

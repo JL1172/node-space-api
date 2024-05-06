@@ -2,10 +2,13 @@ import {
   Body,
   Controller,
   FileTypeValidator,
+  Get,
   HttpStatus,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseInterceptors,
@@ -28,6 +31,7 @@ import { SaplingClient } from './providers/sapling-client';
 import { DraftedMessageBody } from './dtos/DraftedMessageBody';
 import { Request } from 'express';
 import { Mailer } from './providers/mailer';
+import { ParamBody, QueryBody } from './dtos/ViewMessagesBodies';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -124,9 +128,9 @@ export class CustomerController {
     try {
       const filesToReturn: Array<Express.Multer.File> =
         this.fileUtil.sanitizeFileName(files);
-      // for (let i: number = 0; i < filesToReturn.length; i++) {
-      //   await this.fileUtil.validateFile(filesToReturn[i]);
-      // }
+      for (let i: number = 0; i < filesToReturn.length; i++) {
+        await this.fileUtil.validateFile(filesToReturn[i]);
+      }
       //first insert message with:
       /**
        * message_subject
@@ -142,11 +146,12 @@ export class CustomerController {
        * data
        * message_id
        */
-      const recipientEmail = await this.prisma.getCustomerById(
-        body.message_recipient_id,
-      );
       this.jwt.validateJwtToken(req.headers.authorization);
       const id: number = this.jwt.getDecodedJwtToken().id;
+      const recipientEmail = await this.prisma.getCustomerById(
+        body.message_recipient_id,
+        id,
+      );
       const messageToInsertIntoDb: {
         message_subject: string;
         message_text: string;
@@ -169,6 +174,7 @@ export class CustomerController {
         size: n.size,
         data: n.buffer,
       }));
+      //this is the format nodemailer expects
       const filesToMail = filesToReturn.map((n) => ({
         filename: n.originalname,
         content: n.buffer,
@@ -185,11 +191,25 @@ export class CustomerController {
       );
       return `Successfully Sent Message To ${recipientEmail.email}`;
     } catch (err) {
-      console.log(err);
       this.errorHandler.reportError(
         err,
         err.status || HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
+  }
+  @Get('/view-messages/:id')
+  public async getMessages(
+    @Req() req: Request,
+    @Query() query: QueryBody,
+    @Param() params: ParamBody,
+  ) {
+    this.jwt.validateJwtToken(req.headers.authorization);
+    const id = this.jwt.getDecodedJwtToken().id;
+    const messages = await this.prisma.getMessagesWithQueryParams(
+      Number(id),
+      query,
+      params,
+    );
+    return messages;
   }
 }

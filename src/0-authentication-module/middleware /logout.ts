@@ -2,9 +2,6 @@ import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import * as ratelimter from 'express-rate-limit';
 import { AuthenticationErrorHandler } from '../providers/error';
-import { plainToClass } from 'class-transformer';
-import { LogoutBody } from '../dtos/LogoutBody';
-import { validateOrReject } from 'class-validator';
 import { JwtProvider } from '../providers/jwt';
 
 @Injectable()
@@ -28,22 +25,14 @@ export class LogoutRateLimiter implements NestMiddleware {
 @Injectable()
 export class ValidateLogoutBody implements NestMiddleware {
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
-  async use(req: Request, res: Response, next: NextFunction) {
-    const objectToCompare = plainToClass(LogoutBody, req.body);
-    try {
-      await validateOrReject(objectToCompare, {
-        whitelist: true,
-        forbidNonWhitelisted: true,
-      });
-      next();
-    } catch (err) {
-      const errObject = {};
-      err.forEach((n) => (errObject[n.property] = n.constraints));
+  use(req: Request, res: Response, next: NextFunction) {
+    if (!req.headers.authorization) {
       this.errorHandler.reportHttpError(
-        errObject,
+        'Token Required.',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
+    next();
   }
 }
 

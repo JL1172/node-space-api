@@ -10,7 +10,8 @@ export class GlobalErrorMiddleware implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.status;
     const exception_type = exception.name;
-    const message = exception.getResponse();
+    const message =
+      exception?.getResponse() || 'An Unexpected Problem Occurred';
     const timestamp = new Date().toISOString();
     const { baseUrl, method } = request;
     this.logger.error(

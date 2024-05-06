@@ -19,6 +19,12 @@ import { FileUtilProvider } from './providers/file-parsing';
 import { Cloudmersive } from './providers/cloudmersive-client';
 import { SaplingClient } from './providers/sapling-client';
 import { Mailer } from './providers/mailer';
+import {
+  SetDefaultQueryParams,
+  ValidateCustomerWithIdRelatedToUserExists,
+  ValidateParamBody,
+  ValidateQueryBody,
+} from './middleware/get-messages';
 
 @Module({
   imports: [],
@@ -54,6 +60,15 @@ export class CustomerModule implements NestModule {
       .forRoutes(
         '/api/customer/draft-message-to-customer',
         '/api/customer/send-customer-message',
+        '/api/customer/view-messages/:id',
       );
+    consumer
+      .apply(
+        ValidateParamBody,
+        SetDefaultQueryParams,
+        ValidateQueryBody,
+        ValidateCustomerWithIdRelatedToUserExists,
+      )
+      .forRoutes('/api/customer/view-messages/:id');
   }
 }

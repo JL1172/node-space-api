@@ -82,8 +82,11 @@ export class ValidateRecipientId implements NestInterceptor {
       const ctx = context.switchToHttp();
       const req = ctx.getRequest<Request>();
       const body: DraftedMessageBody = req.body;
+      this.jwt.validateJwtToken(req.headers.authorization);
+      const id = this.jwt.getDecodedJwtToken().id;
       const isRecipientValid: Customer = await this.prisma.getCustomerById(
         Number(body.message_recipient_id),
+        id,
       );
       if (!isRecipientValid) {
         this.errorHandler.reportError(

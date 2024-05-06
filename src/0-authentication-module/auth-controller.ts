@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Post,
@@ -14,7 +15,6 @@ import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
 import { ResetPasswordBody } from './dtos/ResetPasswordBody';
 import { AuthenticationPrismaProvider } from './providers/prisma';
-import { LogoutBody } from './dtos/LogoutBody';
 
 @Controller('/api/auth')
 export class AuthenticationController {
@@ -86,9 +86,9 @@ export class AuthenticationController {
     }
   }
   @Get('/logout')
-  public async logout(@Body() body: LogoutBody): Promise<string> {
+  public async logout(@Headers() headers): Promise<string> {
     const tokenToInsertIntoDb: { token: string; expiration_time: Date } = {
-      token: body.token,
+      token: headers.authorization,
       expiration_time: new Date(this.jwt.getDecodedJwtToken().exp * 1000),
     };
     await this.prisma.createNewJwtToken(tokenToInsertIntoDb);
