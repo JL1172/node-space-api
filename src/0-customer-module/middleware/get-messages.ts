@@ -96,7 +96,7 @@ export class ValidateCustomerWithIdRelatedToUserExists
       );
       if (!isCustomerValid) {
         this.errorHandler.reportError(
-          'Customer Does Not Exits.',
+          'Customer Does Not Exist.',
           HttpStatus.BAD_REQUEST,
         );
       }

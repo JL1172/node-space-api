@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../app.module';
 import * as request from 'supertest';
-import { deleteCustomer } from '../../../prisma/deleteCustomer';
+import { deleteCustomer } from '../../../prisma/prisma-scripts/deleteCustomer';
 
 describe('Create new customer endpoint: [/api/customer/create-new-customer]', () => {
   let app: INestApplication;
@@ -130,13 +130,13 @@ describe('Create new customer endpoint: [/api/customer/create-new-customer]', ()
       phoneNumber: 111,
       address: '868 S Arizona Ave, Chandler, Arizona, 85225',
       full_name: 'John Smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectPhonePayloadV2 = {
       phoneNumber: '203309409A',
       address: '868 S Arizona Ave, Chandler, Arizona, 85225',
       full_name: 'John Smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectPhonePayloadErrorMessageV1 = {
       phoneNumber: {
@@ -156,19 +156,19 @@ describe('Create new customer endpoint: [/api/customer/create-new-customer]', ()
       phoneNumber: '4439452195',
       address: true,
       full_name: 'John Smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectAddressPayloadV2 = {
       phoneNumber: '4439452195',
       address: 'hel?',
       full_name: 'John Smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectAddressPayloadV3 = {
       phoneNumber: '4439452195',
       address: 'heloi?',
       full_name: 'John Smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectAddressPayloadErrorMessageV1 = {
       address: {
@@ -194,7 +194,7 @@ describe('Create new customer endpoint: [/api/customer/create-new-customer]', ()
       phoneNumber: '4439452195',
       address: '868 S Arizona Ave. Apt#1002 Chandler, Arizona 85225-104',
       full_name: 'john-smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectFullNamePayloadErrorMessageV1 = {
       full_name: {
@@ -205,7 +205,7 @@ describe('Create new customer endpoint: [/api/customer/create-new-customer]', ()
       phoneNumber: '4439452195',
       address: '868 S Arizona Ave. Apt#1002 Chandler, Arizona 85225-104',
       full_name: true,
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const incorrectFullNamePayloadErrorMessageV2 = {
       full_name: {
@@ -273,7 +273,7 @@ describe('Create new customer endpoint: [/api/customer/create-new-customer]', ()
       phoneNumber: '4439452195',
       address: '868 S Arizona Ave. Apt#1002 Chandler, Arizona 85225-104',
       full_name: 'john smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const res: request.Response = await request(app.getHttpServer())
       .post(newCustomerUrl)
@@ -312,7 +312,7 @@ describe('Create new customer endpoint: [/api/customer/create-new-customer]', ()
       phoneNumber: '4439452195',
       address: '868 S Arizona Ave. Apt#1002 Chandler, Arizona 85225-104',
       full_name: 'john smith',
-      email: 'johnsmith@hotmail.com',
+      email: 'jacoblang72@icloud.com',
     };
     const res: request.Response = await request(app.getHttpServer())
       .post(newCustomerUrl)

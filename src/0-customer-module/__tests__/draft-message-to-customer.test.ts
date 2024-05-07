@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../app.module';
 import * as request from 'supertest';
 import { maxRateLimitForDraftMessageEndpoint } from '../middleware/draft-message';
-import { deleteJwt } from '../../../prisma/deleteJwt';
+import { deleteJwt } from '../../../prisma/prisma-scripts/deleteJwt';
 
 describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-customer]', () => {
   let app: INestApplication;
@@ -150,7 +150,7 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
       message_subject: 'introductory call',
       message_text:
         'Hello Jim, I was wanting to schedule an introductory call this friday at 5:00pm, please let me know if this works for you.',
-      message_recipient_id: 1,
+      message_recipient_id: 2,
       message_sender_id: 1,
     };
     // const files = [test_docx, test_jpg, test_odt, test_pdf, test_png];
@@ -178,4 +178,7 @@ describe('Draft Message To Customer Endpoint: [/api/auth/draft-message-to-custom
     expect(res.body).toHaveProperty('suggestedMessages');
     expect(Object.keys(res.body)).toHaveLength(2);
   });
+  test.todo(
+    'This is not a todo test. Note that there are some tests that are not ran in order to avoid over calling sapling api and cloudmersive api. All functions between draft message to send message have been tested thoroughly on postman',
+  );
 });
