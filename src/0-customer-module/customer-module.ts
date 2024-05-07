@@ -29,6 +29,11 @@ import {
   ValidateCustomerExists,
   ValidateQueryParameters,
 } from './middleware/view-customers';
+import {
+  ValidateCustomerIsUnique,
+  ValidateUpdatedCustomerBody,
+  ValidateUpdatedCustomerExists,
+} from './middleware/update-customer';
 
 @Module({
   imports: [],
@@ -82,5 +87,13 @@ export class CustomerModule implements NestModule {
     consumer
       .apply(ValidateQueryParameters, ValidateCustomerExists)
       .forRoutes('/api/customer/view-customers');
+    consumer
+      .apply(
+        ValidateUpdatedCustomerBody,
+        SanitizeNewCustomerBody,
+        ValidateUpdatedCustomerExists,
+        ValidateCustomerIsUnique,
+      )
+      .forRoutes('/api/customer/update-customer-info');
   }
 }

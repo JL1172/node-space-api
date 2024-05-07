@@ -34,6 +34,8 @@ import { Request } from 'express';
 import { Mailer } from './providers/mailer';
 import { ParamBody, QueryBody } from './dtos/ViewMessagesBodies';
 import { QueryParamsBody2 } from './dtos/ViewCustomerBodies';
+import { UpdatedCustomerBody } from './dtos/UpdatedCustomerBody';
+import { Customer } from '@prisma/client';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -49,10 +51,17 @@ export class CustomerController {
   public async createNewCustomer(
     @Body() body: NewCustomerBody,
   ): Promise<string> {
-    const user_id: number = this.jwt.getDecodedJwtToken().id;
-    const newCustomer: NewCustomerBodyToInsertIntoDb = { ...body, user_id };
-    await this.prisma.createNewCustomer(newCustomer);
-    return 'Successfully Created Customer.';
+    try {
+      const user_id: number = this.jwt.getDecodedJwtToken().id;
+      const newCustomer: NewCustomerBodyToInsertIntoDb = { ...body, user_id };
+      await this.prisma.createNewCustomer(newCustomer);
+      return 'Successfully Created Customer.';
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   /*
    * rate limit
@@ -267,10 +276,21 @@ export class CustomerController {
    * validate body (see customer body in prisma)
    * sanitize body
    * validate customer with id exists
+   * validate customer is unique (minus itself)
    * put changes
    */
-  public async updateCustomer() {
-    return 'Successfully Updated Customer.';
+  public async updateCustomer(
+    @Body() body: UpdatedCustomerBody,
+  ): Promise<Customer> {
+    try {
+      const id = this.jwt.getDecodedJwtToken().id;
+      return await this.prisma.updateCustomer(body, id);
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Error Occurred. Try Again.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Post('/create-customer-todo')
   /** (this will be like reach out 4 times this week or something)

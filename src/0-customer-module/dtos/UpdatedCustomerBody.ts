@@ -1,12 +1,13 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsString,
   Matches,
   MinLength,
 } from 'class-validator';
 
-export class NewCustomerBody {
+export class UpdatedCustomerBody {
   @IsNotEmpty({ message: 'Phone Number Is Required.' })
   @IsString({ message: 'Phone Number Must Be A String.' })
   @Matches(/^[0-9]*$/, { message: 'Phone Number Must Only Contain Numbers.' })
@@ -24,12 +25,7 @@ export class NewCustomerBody {
   @IsNotEmpty({ message: 'Email Is Required.' })
   @IsEmail({}, { message: 'Invalid Email.' })
   email: string;
-}
-
-export class NewCustomerBodyToInsertIntoDb {
-  phoneNumber: string;
-  address: string;
-  full_name: string;
-  email: string;
-  user_id: number;
+  @IsNumber({}, { message: 'Must Be A Valid Number.' })
+  @IsNotEmpty({ message: 'Id Is Required.' })
+  id: number;
 }

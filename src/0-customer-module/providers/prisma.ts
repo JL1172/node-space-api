@@ -12,6 +12,7 @@ import {
   NewCustomerBodyToInsertIntoDb,
 } from '../dtos/NewCustomerBody';
 import { ParamBody, QueryBody } from '../dtos/ViewMessagesBodies';
+import { UpdatedCustomerBody } from '../dtos/UpdatedCustomerBody';
 
 @Injectable()
 export class CustomerPrismaProvider {
@@ -154,6 +155,62 @@ export class CustomerPrismaProvider {
     return await this.prisma.customer.findFirst({
       where: { user_id: id, phoneNumber },
     });
+  }
+  public async updateCustomer(
+    updatedCustomer: UpdatedCustomerBody,
+    userId: number,
+  ) {
+    return await this.prisma.customer.update({
+      where: { id: updatedCustomer.id, user_id: userId },
+      data: updatedCustomer,
+    });
+  }
+  public async verifyUpdatedCustomerIsUnique(
+    customer_id: number,
+    user_id_in_relation_to_customer: number,
+    updatdCustomer: UpdatedCustomerBody,
+  ) {
+    const isEmailUnique: Customer = await this.prisma.customer.findFirst({
+      where: {
+        id: { not: customer_id },
+        user_id: user_id_in_relation_to_customer,
+        email: updatdCustomer.email,
+      },
+    });
+    if (isEmailUnique !== null) {
+      return false;
+    }
+    const isPhoneNumberUnique: Customer = await this.prisma.customer.findFirst({
+      where: {
+        id: { not: customer_id },
+        user_id: user_id_in_relation_to_customer,
+        phoneNumber: updatdCustomer.phoneNumber,
+      },
+    });
+    if (isPhoneNumberUnique !== null) {
+      return false;
+    }
+    const isAddressUnique: Customer = await this.prisma.customer.findFirst({
+      where: {
+        id: { not: customer_id },
+        user_id: user_id_in_relation_to_customer,
+        address: updatdCustomer.address,
+      },
+    });
+    if (isAddressUnique !== null) {
+      return false;
+    }
+    const isFullNameUnique: Customer = await this.prisma.customer.findFirst({
+      where: {
+        id: { not: customer_id },
+        user_id: user_id_in_relation_to_customer,
+        full_name: updatdCustomer.full_name,
+      },
+    });
+    if (isFullNameUnique !== null) {
+      return false;
+    }
+    return true;
   }
   public async verifyCustomerIsUnique(
     id: number,
