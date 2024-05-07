@@ -13,7 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "resetdb": "cd prisma && ts-node delete.ts",
+    "resetdb": "cd prisma/prisma-scripts && ts-node delete.ts",
     "soft-reset": "cd src/0-customer-module/__tests__/db-test-scripts && npx ts-node db-test-script.ts",
     "test:all": "jest --verbose --runInBand --forceExit",
     "test:customer:all": "jest 0-customer-module --verbose --runInBand --watchAll --detectOpenHandles ",
