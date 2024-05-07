@@ -32,22 +32,22 @@ export class SetDefaultQueryParams implements NestMiddleware {
   constructor(private readonly errorHandler: CustomerErrorHandler) {}
   use(req: Request, res: Response, next: NextFunction) {
     try {
-      const query = req.query;
-      if (Object.keys(query).length !== 5) {
-        const {
-          limit = '10',
-          page = '1',
-          sortBy = 'created_at',
-          sortDir = 'asc',
-        } = req.query;
-        const defaultQueryParams = {
-          limit,
-          page,
-          sortBy,
-          sortDir,
-        };
-        req.query = defaultQueryParams;
-      }
+      // const query = req.query;
+      // if (Object.keys(query).length !== 4) {
+      const {
+        limit = '10',
+        page = '1',
+        sortBy = 'created_at',
+        sortDir = 'asc',
+      } = req.query;
+      const defaultQueryParams = {
+        limit,
+        page,
+        sortBy,
+        sortDir,
+      };
+      req.query = defaultQueryParams;
+      // }
       next();
     } catch (err) {
       this.errorHandler.reportError(
@@ -103,7 +103,9 @@ export class ValidateCustomerWithIdRelatedToUserExists
       next();
     } catch (err) {
       this.errorHandler.reportError(
-        err?.message || 'An Unexpected Problem Occurred.',
+        err?.inner?.message ||
+          err?.message ||
+          'An Unexpected Problem Occurred.',
         err?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

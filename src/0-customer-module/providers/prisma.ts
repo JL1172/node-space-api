@@ -63,7 +63,11 @@ export class CustomerPrismaProvider {
       data: fileToInsertIntoDb,
     });
   }
-
+  public async getCustomersAssociatedWithUserId(
+    id: number,
+  ): Promise<Customer[]> {
+    return await this.prisma.customer.findMany({ where: { user_id: id } });
+  }
   public async getMessagesWithQueryParams(
     sender_id: number,
     query: QueryBody,
@@ -108,7 +112,10 @@ export class CustomerPrismaProvider {
     user_id_in_relation_to_customer: number,
   ): Promise<Customer> {
     return await this.prisma.customer.findUnique({
-      where: { id: Number(id), user_id: user_id_in_relation_to_customer },
+      where: {
+        id: Number(id),
+        user_id: Number(user_id_in_relation_to_customer),
+      },
     });
   }
   public async getJwtByToken(token: string): Promise<JwtToken> {

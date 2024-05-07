@@ -25,6 +25,10 @@ import {
   ValidateParamBody,
   ValidateQueryBody,
 } from './middleware/get-messages';
+import {
+  ValidateCustomerExists,
+  ValidateQueryParameters,
+} from './middleware/view-customers';
 
 @Module({
   imports: [],
@@ -61,6 +65,7 @@ export class CustomerModule implements NestModule {
         '/api/customer/draft-message-to-customer',
         '/api/customer/send-customer-message',
         '/api/customer/view-messages/:id',
+        'api/customer/view-customer/:id',
       );
     consumer
       .apply(
@@ -70,5 +75,8 @@ export class CustomerModule implements NestModule {
         ValidateCustomerWithIdRelatedToUserExists,
       )
       .forRoutes('/api/customer/view-messages/:id');
+    consumer
+      .apply(ValidateQueryParameters, ValidateCustomerExists)
+      .forRoutes('/api/customer/view-customers');
   }
 }

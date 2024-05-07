@@ -32,6 +32,7 @@ import { DraftedMessageBody } from './dtos/DraftedMessageBody';
 import { Request } from 'express';
 import { Mailer } from './providers/mailer';
 import { ParamBody, QueryBody } from './dtos/ViewMessagesBodies';
+import { QueryParamsBody2 } from './dtos/ViewCustomerBodies';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -146,7 +147,12 @@ export class CustomerController {
        * data
        * message_id
        */
-      this.jwt.validateJwtToken(req.headers.authorization);
+      if (!this.jwt.validateJwtToken(req.headers.authorization)) {
+        this.errorHandler.reportError(
+          'Token Expired.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       const id: number = this.jwt.getDecodedJwtToken().id;
       const recipientEmail = await this.prisma.getCustomerById(
         body.message_recipient_id,
@@ -192,7 +198,7 @@ export class CustomerController {
       return `Successfully Sent Message To ${recipientEmail.email}`;
     } catch (err) {
       this.errorHandler.reportError(
-        err,
+        err?.inner?.message || err,
         err.status || HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
@@ -203,13 +209,53 @@ export class CustomerController {
     @Query() query: QueryBody,
     @Param() params: ParamBody,
   ) {
-    this.jwt.validateJwtToken(req.headers.authorization);
-    const id = this.jwt.getDecodedJwtToken().id;
-    const messages = await this.prisma.getMessagesWithQueryParams(
-      Number(id),
-      query,
-      params,
-    );
-    return messages;
+    try {
+      this.jwt.validateJwtToken(req.headers.authorization);
+
+      const id = this.jwt.getDecodedJwtToken().id;
+      const messages = await this.prisma.getMessagesWithQueryParams(
+        Number(id),
+        query,
+        params,
+      );
+      return messages;
+    } catch (err) {
+      this.errorHandler.reportError(
+        err?.inner?.message || err.message,
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  /**
+   * rate limit()
+   * validate jwt is not blacklisted()
+   * validate jwt()
+   * transform default query value if none are present ()
+   * validate query params ()
+   * if query.id is present validate customer with id exists in relation to user id ()
+   * if query.id is present return customerbyid else return all customer with relation to user_id ()
+   */
+  @Get('/view-customers')
+  public async getCustomers(
+    @Req() req: Request,
+    @Query() query: QueryParamsBody2,
+  ) {
+    try {
+      this.jwt.validateJwtToken(req.headers.authorization);
+      const decodedTokenId = this.jwt.getDecodedJwtToken();
+      const { id = 'all' } = query;
+      if (id === 'all') {
+        return await this.prisma.getCustomersAssociatedWithUserId(
+          decodedTokenId.id,
+        );
+      } else {
+        return await this.prisma.getCustomerById(Number(id), decodedTokenId.id);
+      }
+    } catch (err) {
+      this.errorHandler.reportError(
+        err?.inner?.message || 'An Unexpected Problem Occurred.',
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
