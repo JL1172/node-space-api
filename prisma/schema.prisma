@@ -145,6 +145,7 @@ model Todo {
   completed        Boolean?  @default(false)
   todo_description String
   todo_title       String
+  deadline_date    DateTime
   created_at       DateTime? @default(now())
   updated_at       DateTime? @updatedAt()
 }

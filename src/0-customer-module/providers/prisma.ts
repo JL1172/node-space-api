@@ -13,12 +13,16 @@ import {
 } from '../dtos/NewCustomerBody';
 import { ParamBody, QueryBody } from '../dtos/ViewMessagesBodies';
 import { UpdatedCustomerBody } from '../dtos/UpdatedCustomerBody';
+import { CustomerTodo } from '../dtos/CustomerTodoBody';
 
 @Injectable()
 export class CustomerPrismaProvider {
   private readonly prisma: PrismaClient;
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
+  }
+  public async createCustomerTodo(todo: CustomerTodo) {
+    return await this.prisma.todo.create({ data: todo });
   }
   public async createMessage(
     messageDataToInsert: {

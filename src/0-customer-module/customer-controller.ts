@@ -35,7 +35,8 @@ import { Mailer } from './providers/mailer';
 import { ParamBody, QueryBody } from './dtos/ViewMessagesBodies';
 import { QueryParamsBody2 } from './dtos/ViewCustomerBodies';
 import { UpdatedCustomerBody } from './dtos/UpdatedCustomerBody';
-import { Customer } from '@prisma/client';
+import { Customer, Todo } from '@prisma/client';
+import { CustomerTodo } from './dtos/CustomerTodoBody';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -301,8 +302,11 @@ export class CustomerController {
    * sanitize req.body
    * post changes
    */
-  public async createCustomerTodo() {
-    return 'Successfully created todo related to customer';
+  public async createCustomerTodo(@Body() body: CustomerTodo) {
+    const dateToInsertIntoDb = new Date(body.deadline_date);
+    body.deadline_date = dateToInsertIntoDb;
+    const result: Todo = await this.prisma.createCustomerTodo(body);
+    return result;
   }
   @Put('/update-customer-todo')
   /**
@@ -322,8 +326,9 @@ export class CustomerController {
    * jwt not blacklisted
    * jwt valid
    * id is integer
-   * query parameters will be completed=false || completed=true || completed=all (default query parameters set)
    * validte customer with id related to user with id exists
+   * query parameters will be completed=false || completed=true || completed=all (default query parameters set)
+   * sortby deadline that is the closest
    * return todos
    */
   public async getCustomerTodos() {
