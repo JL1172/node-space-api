@@ -8,6 +8,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Put,
   Query,
   Req,
   UploadedFiles,
@@ -257,5 +258,55 @@ export class CustomerController {
         err.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+  @Put('/update-customer-info')
+  /**
+   * rate limit
+   * jwt not blacklisted?
+   * jwt valid
+   * validate body (see customer body in prisma)
+   * sanitize body
+   * validate customer with id exists
+   * put changes
+   */
+  public async updateCustomer() {
+    return 'Successfully Updated Customer.';
+  }
+  @Post('/create-customer-todo')
+  /** (this will be like reach out 4 times this week or something)
+   * rate limit
+   * jwt not blacklisted
+   * jwt valid
+   * validate req.body
+   * sanitize req.body
+   * post changes
+   */
+  public async createCustomerTodo() {
+    return 'Successfully created todo related to customer';
+  }
+  @Put('/update-customer-todo')
+  /**
+   * rate limit
+   * jwt not blacklisted
+   * jwt valid
+   * validate req.body
+   * sanitize req.body
+   * post changes
+   */
+  public async updateCustomerTodo() {
+    return 'Successfully updated customer todo';
+  }
+  @Get('/customer-todos/:id')
+  /**
+   * rate limit
+   * jwt not blacklisted
+   * jwt valid
+   * id is integer
+   * query parameters will be completed=false || completed=true || completed=all (default query parameters set)
+   * validte customer with id related to user with id exists
+   * return todos
+   */
+  public async getCustomerTodos() {
+    return 'Successfully get customer todos';
   }
 }

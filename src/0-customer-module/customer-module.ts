@@ -65,7 +65,11 @@ export class CustomerModule implements NestModule {
         '/api/customer/draft-message-to-customer',
         '/api/customer/send-customer-message',
         '/api/customer/view-messages/:id',
-        'api/customer/view-customer/:id',
+        '/api/customer/view-customers',
+        '/api/customer/update-customer-info',
+        '/api/customer/create-customer-todo',
+        '/api/customer/update-customer-todo',
+        '/api/customer/customer-todos/:id',
       );
     consumer
       .apply(

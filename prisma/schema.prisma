@@ -25,6 +25,10 @@ model User {
   VerificationCode VerificationCode[]
   Customer         Customer[]
   Message          Message[]
+  Todo             Todo[]
+  Project          Project[]
+  GeneralTodo      GeneralTodo[]
+  ProjectTodo      ProjectTodo[]
 }
 
 model VerificationCode {
@@ -58,6 +62,8 @@ model Customer {
   created_at  DateTime? @default(now())
   updated_at  DateTime? @updatedAt()
   Message     Message[]
+  Todo        Todo[]
+  Project     Project[]
 
   @@unique([email, user_id])
   @@unique([address, user_id])
@@ -86,4 +92,83 @@ model MessageMedia {
   message_id Int
   message    Message   @relation(fields: [message_id], references: [id])
   created_at DateTime? @default(now())
+}
+
+model Project {
+  id                  Int              @id @default(autoincrement())
+  user_id             Int
+  user                User             @relation(fields: [user_id], references: [id])
+  customer_id         Int
+  customer            Customer         @relation(fields: [customer_id], references: [id])
+  todos               ProjectTodo[]
+  project_title       String
+  project_description String
+  budget              Int
+  project_expenses    ProjectExpense[]
+  completed           Boolean?         @default(false)
+  estimated_end_date  DateTime?
+  actual_end_date     DateTime?
+  estimated_revenue   Int
+  actual_revenue      Int?
+  created_at          DateTime?        @default(now())
+  updated_at          DateTime?        @updatedAt()
+}
+
+model ProjectExpense {
+  id                    Int                    @id @default(autoincrement())
+  project_id            Int
+  project               Project                @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  monetary_amount       Int
+  expense_description   String
+  expense_documentation ExpenseDocumentation[]
+  created_at            DateTime?              @default(now())
+  updated_at            DateTime?              @updatedAt()
+}
+
+model ExpenseDocumentation {
+  id                 Int            @id @default(autoincrement())
+  project_expense_id Int
+  project_expense    ProjectExpense @relation(fields: [project_expense_id], references: [id], onDelete: Cascade)
+  file               Bytes
+  file_name          String
+  mime_type          String
+  size               Int
+  created_at         DateTime?      @default(now())
+}
+
+model Todo {
+  id               Int       @id @default(autoincrement())
+  customer_id      Int
+  customer         Customer  @relation(fields: [customer_id], references: [id])
+  user_id          Int
+  user             User      @relation(fields: [user_id], references: [id])
+  completed        Boolean?  @default(false)
+  todo_description String
+  todo_title       String
+  created_at       DateTime? @default(now())
+  updated_at       DateTime? @updatedAt()
+}
+
+model GeneralTodo {
+  id               Int       @id @default(autoincrement())
+  user_id          Int
+  user             User      @relation(fields: [user_id], references: [id])
+  completed        Boolean?  @default(false)
+  todo_description String
+  todo_title       String
+  created_at       DateTime? @default(now())
+  updated_at       DateTime? @updatedAt()
+}
+
+model ProjectTodo {
+  id               Int       @id @default(autoincrement())
+  project_id       Int
+  project          Project   @relation(fields: [project_id], references: [id])
+  user_id          Int
+  user             User      @relation(fields: [user_id], references: [id])
+  completed        Boolean?  @default(false)
+  todo_description String
+  todo_title       String
+  created_at       DateTime? @default(now())
+  updated_at       DateTime? @updatedAt()
 }

@@ -4,6 +4,7 @@ import { GlobalLogger } from './global/global-utils/middleware/logger';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './global/cron/cron-module';
 import { CustomerModule } from './0-customer-module/customer-module';
+import { ProjectModule } from './0-project-module/project-module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { CustomerModule } from './0-customer-module/customer-module';
     CustomerModule,
     ScheduleModule.forRoot(),
     CronModule,
+    ProjectModule,
   ],
   controllers: [],
   providers: [],
