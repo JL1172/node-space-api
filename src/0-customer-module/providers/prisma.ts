@@ -4,6 +4,7 @@ import {
   JwtToken,
   Message,
   PrismaClient,
+  Todo,
   User,
 } from '@prisma/client';
 import { SingletonPrismaProvider } from '../../global/global-utils/providers/singleton-prisma';
@@ -14,12 +15,61 @@ import {
 import { ParamBody, QueryBody } from '../dtos/ViewMessagesBodies';
 import { UpdatedCustomerBody } from '../dtos/UpdatedCustomerBody';
 import { CustomerTodo } from '../dtos/CustomerTodoBody';
+import { UpdatedCustomerTodo } from '../dtos/UpdatedCustomerTodoBody';
 
 @Injectable()
 export class CustomerPrismaProvider {
   private readonly prisma: PrismaClient;
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
+  }
+  public async getTodoById(
+    todo_id: number,
+    customer_id: number,
+    user_id: number,
+  ) {
+    return await this.prisma.todo.findUnique({
+      where: { id: todo_id, customer_id, user_id },
+    });
+  }
+  public async updateTodo(todo: UpdatedCustomerTodo): Promise<Todo> {
+    const customer_id = todo.customer_id;
+    delete todo.customer_id;
+    return await this.prisma.todo.update({
+      where: {
+        id: todo.id,
+        user_id: todo.user_id,
+        customer_id,
+      },
+      data: todo,
+    });
+  }
+  public async validateTodoIsUniqueBesidesItself(
+    todo: UpdatedCustomerTodo,
+    userId: number,
+  ): Promise<Todo> {
+    return await this.prisma.todo.findFirst({
+      where: {
+        id: { not: todo.id },
+        customer_id: todo.customer_id,
+        user_id: userId,
+        deadline_date: new Date(todo.deadline_date),
+        todo_title: todo.todo_title,
+      },
+    });
+  }
+  public async validateTodoIsUnique(
+    todo: CustomerTodo,
+    userId: number,
+  ): Promise<Todo> {
+    return await this.prisma.todo.findFirst({
+      where: {
+        customer_id: todo.customer_id,
+        user_id: userId,
+        deadline_date: new Date(todo.deadline_date),
+        todo_title: todo.todo_title,
+      },
+    });
   }
   public async createCustomerTodo(todo: CustomerTodo) {
     return await this.prisma.todo.create({ data: todo });

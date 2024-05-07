@@ -37,6 +37,7 @@ import { QueryParamsBody2 } from './dtos/ViewCustomerBodies';
 import { UpdatedCustomerBody } from './dtos/UpdatedCustomerBody';
 import { Customer, Todo } from '@prisma/client';
 import { CustomerTodo } from './dtos/CustomerTodoBody';
+import { UpdatedCustomerTodo } from './dtos/UpdatedCustomerTodoBody';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -303,10 +304,17 @@ export class CustomerController {
    * post changes
    */
   public async createCustomerTodo(@Body() body: CustomerTodo) {
-    const dateToInsertIntoDb = new Date(body.deadline_date);
-    body.deadline_date = dateToInsertIntoDb;
-    const result: Todo = await this.prisma.createCustomerTodo(body);
-    return result;
+    try {
+      const dateToInsertIntoDb = new Date(body.deadline_date);
+      body.deadline_date = dateToInsertIntoDb;
+      const result: Todo = await this.prisma.createCustomerTodo(body);
+      return result;
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred Creating Todo.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Put('/update-customer-todo')
   /**
@@ -317,8 +325,20 @@ export class CustomerController {
    * sanitize req.body
    * post changes
    */
-  public async updateCustomerTodo() {
-    return 'Successfully updated customer todo';
+  public async updateCustomerTodo(
+    @Body() body: UpdatedCustomerTodo,
+  ): Promise<Todo> {
+    try {
+      const dateToInsertIntoDb = new Date(body.deadline_date);
+      body.deadline_date = dateToInsertIntoDb;
+      const result: Todo = await this.prisma.updateTodo(body);
+      return result;
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Error Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Get('/customer-todos/:id')
   /**

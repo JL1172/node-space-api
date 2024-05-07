@@ -38,7 +38,13 @@ import {
   SanitizeCustomerTodoBody,
   ValidateCustomerExistsForTodo,
   ValidateCustomerTodoBody,
+  ValidateTodoIsUnique,
 } from './middleware/create-customer-todo';
+import {
+  ValidateTodoExists,
+  ValidateTodoIsUniqueForUpdateInstance,
+  ValidateUpdatedCustomerTodoBody,
+} from './middleware/update-customer-todo';
 
 @Module({
   imports: [],
@@ -105,7 +111,17 @@ export class CustomerModule implements NestModule {
         ValidateCustomerTodoBody,
         SanitizeCustomerTodoBody,
         ValidateCustomerExistsForTodo,
+        ValidateTodoIsUnique,
       )
       .forRoutes('/api/customer/create-customer-todo');
+    consumer
+      .apply(
+        ValidateUpdatedCustomerTodoBody,
+        SanitizeCustomerTodoBody,
+        ValidateCustomerExistsForTodo,
+        ValidateTodoExists,
+        ValidateTodoIsUniqueForUpdateInstance,
+      )
+      .forRoutes('/api/customer/update-customer-todo');
   }
 }

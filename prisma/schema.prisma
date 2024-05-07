@@ -148,6 +148,8 @@ model Todo {
   deadline_date    DateTime
   created_at       DateTime? @default(now())
   updated_at       DateTime? @updatedAt()
+
+  @@unique([todo_title, deadline_date, user_id, customer_id])
 }
 
 model GeneralTodo {

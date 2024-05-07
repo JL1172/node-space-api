@@ -1,18 +1,17 @@
-import * as validator from 'validator';
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { CustomerErrorHandler } from '../providers/error';
-import { NextFunction, Request, Response } from 'express';
-import { plainToClass } from 'class-transformer';
-import { CustomerTodo } from '../dtos/CustomerTodoBody';
-import { validateOrReject } from 'class-validator';
 import { JwtProvider } from '../providers/jwt';
 import { CustomerPrismaProvider } from '../providers/prisma';
+import { NextFunction, Request, Response } from 'express';
+import { plainToClass } from 'class-transformer';
+import { UpdatedCustomerTodo } from '../dtos/UpdatedCustomerTodoBody';
+import { validateOrReject } from 'class-validator';
 
 @Injectable()
-export class ValidateCustomerTodoBody implements NestMiddleware {
+export class ValidateUpdatedCustomerTodoBody implements NestMiddleware {
   constructor(private readonly errorHandler: CustomerErrorHandler) {}
   async use(req: Request, res: Response, next: NextFunction) {
-    const objectToCompare = plainToClass(CustomerTodo, req.body);
+    const objectToCompare = plainToClass(UpdatedCustomerTodo, req.body);
     try {
       await validateOrReject(objectToCompare, {
         whitelist: true,
@@ -26,35 +25,8 @@ export class ValidateCustomerTodoBody implements NestMiddleware {
     }
   }
 }
-
 @Injectable()
-export class SanitizeCustomerTodoBody implements NestMiddleware {
-  private readonly validate = validator;
-  constructor(private readonly errorHandler: CustomerErrorHandler) {}
-  use(req: Request, res: Response, next: NextFunction) {
-    try {
-      const keys: string[] = ['todo_description', 'todo_title'];
-      const body: CustomerTodo = req.body;
-      keys.forEach((n) => {
-        body[n] = this.validate.escape(body[n]);
-        body[n] = this.validate.trim(body[n]);
-        body[n] = this.validate.blacklist(
-          body[n],
-          /[\x00-\x1F\s;'"\\<>]/.source,
-        );
-      });
-      next();
-    } catch (err) {
-      this.errorHandler.reportError(
-        'An Unexpected Problem Occurred.',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-}
-
-@Injectable()
-export class ValidateCustomerExistsForTodo implements NestMiddleware {
+export class ValidateTodoExists implements NestMiddleware {
   constructor(
     private readonly errorHandler: CustomerErrorHandler,
     private readonly jwt: JwtProvider,
@@ -62,30 +34,30 @@ export class ValidateCustomerExistsForTodo implements NestMiddleware {
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-      this.jwt.validateJwtToken(req.headers.authorization);
-      const id = this.jwt.getDecodedJwtToken().id;
-      const customer_id = req.body.customer_id;
-      const result = await this.prisma.getCustomerById(customer_id, id);
+      const body: UpdatedCustomerTodo = req.body;
+      const result = await this.prisma.getTodoById(
+        body.id,
+        body.customer_id,
+        body.user_id,
+      );
       if (result === null) {
         this.errorHandler.reportError(
-          'Customer Does Not Exist.',
-          HttpStatus.BAD_REQUEST,
+          'Todo Does Not Exist.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
         );
       } else {
-        req.body.user_id = id;
         next();
       }
     } catch (err) {
       this.errorHandler.reportError(
-        err?.inner?.message || err.message || 'An Unexpected Problem Occurred.',
+        err.message || 'An Unexpected Problem Occurred.',
         err.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 }
-
 @Injectable()
-export class ValidateTodoIsUnique implements NestMiddleware {
+export class ValidateTodoIsUniqueForUpdateInstance implements NestMiddleware {
   constructor(
     private readonly errorHandler: CustomerErrorHandler,
     private readonly jwt: JwtProvider,
@@ -95,7 +67,10 @@ export class ValidateTodoIsUnique implements NestMiddleware {
     try {
       this.jwt.validateJwtToken(req.headers.authorization);
       const id = this.jwt.getDecodedJwtToken().id;
-      const result = await this.prisma.validateTodoIsUnique(req.body, id);
+      const result = await this.prisma.validateTodoIsUniqueBesidesItself(
+        req.body,
+        id,
+      );
       if (result !== null) {
         this.errorHandler.reportError(
           'Todo With Same Customer, Same Deadline, And Same Title Already Exist.',
