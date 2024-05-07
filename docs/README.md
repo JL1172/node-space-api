@@ -1,6 +1,6 @@
 # Todo
 1. [x] create endpoint to send customers messages (post) (more description in customer module readme)
-2. [ ] create endpoint to view messages with that customer (filter by limit 10, filter by date or specific date (default is latest to oldest), paginate, filter by content: all is default but can view only files) (get)
+2. [x] create endpoint to view messages with that customer (filter by limit 10, filter by date or specific date (default is latest to oldest), paginate, filter by content: all is default but can view only files) (get)
 3. [ ] create endpoint to view customers 
 4. [ ] create endpoint to view customer's contact information (get)
 5. [ ] create endpoint to update customer's contact information (patch)

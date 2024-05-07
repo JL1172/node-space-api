@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
-import { resetDb } from '../../../prisma/delete';
+import { resetDb } from '../../../prisma/prisma-scripts/delete';
 import { VerificationCode } from '@prisma/client';
 import { AuthenticationPrismaProvider } from '../providers/prisma';
 
