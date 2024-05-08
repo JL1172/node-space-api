@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './global/cron/cron-module';
 import { CustomerModule } from './0-customer-module/customer-module';
 import { ProjectModule } from './0-project-module/project-module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { ProjectModule } from './0-project-module/project-module';
     CronModule,
     ProjectModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {
