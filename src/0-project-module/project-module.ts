@@ -21,6 +21,12 @@ import {
   ValidateProjectWithIdInRelationToCustomerAndUserExists,
   ValidateUpdatedProjectBody,
 } from './middleware/update-project';
+import {
+  SetDefaultQueryParams,
+  ValidateCustomerWithIdExistsQueryParam,
+  ValidateProjectExists,
+  ValidateQueryParams,
+} from './middleware/get-project';
 
 @Module({
   imports: [],
@@ -60,5 +66,13 @@ export class ProjectModule implements NestModule {
         ValidateProjectIsUniqueForUpdatedProject,
       )
       .forRoutes('/api/project/update-project');
+    consumer
+      .apply(
+        SetDefaultQueryParams,
+        ValidateQueryParams,
+        ValidateCustomerWithIdExistsQueryParam,
+        ValidateProjectExists,
+      )
+      .forRoutes('/api/project/view-project');
   }
 }

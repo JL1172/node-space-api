@@ -3,6 +3,11 @@ import { Customer, JwtToken, PrismaClient, Project } from '@prisma/client';
 import { SingletonPrismaProvider } from 'src/global/global-utils/providers/singleton-prisma';
 import { NewProjectBody } from '../dtos/CreateProjectBody';
 import { FinalUpdatedProjectBody } from '../dtos/UpdateProjectBody';
+import {
+  AllProjectsOfEveryCustomer,
+  AllProjectsOfOneCustomer,
+} from '../dtos/ViewProjectBody';
+import { SortByTodoEnum } from 'src/0-customer-module/dtos/GetCustomerTodoBodies';
 
 @Injectable()
 export class ProjectPrismaProvider {
@@ -74,6 +79,55 @@ export class ProjectPrismaProvider {
     return await this.prisma.project.update({
       where: { id: proj_id, user_id, customer_id },
       data: updatedProject,
+    });
+  }
+  public async getAllProjectsForAllCustomers(
+    user_id: number,
+    query: AllProjectsOfEveryCustomer,
+  ): Promise<Project[]> {
+    const { limit, page, sortBy, complete } = query;
+    return await this.prisma.project.findMany({
+      where: {
+        user_id,
+        completed: {
+          not: complete === 'all' ? null : complete === 'true' ? false : true,
+        },
+      },
+      orderBy: {
+        estimated_end_date: sortBy === SortByTodoEnum.URGENT ? 'asc' : 'desc',
+      },
+      skip: Number(limit) * Number(page) - Number(limit),
+      take: Number(limit),
+    });
+  }
+  public async getOneProjectForOneCustomer(
+    pid: number,
+    cid: number,
+    uid: number,
+  ): Promise<Project> {
+    return await this.prisma.project.findFirst({
+      where: { id: pid, customer_id: cid, user_id: uid },
+    });
+  }
+  public async getAllProjectsForOneCustomer(
+    customer_id: number,
+    user_id: number,
+    query: AllProjectsOfOneCustomer,
+  ): Promise<Project[]> {
+    const { limit, page, sortBy, complete } = query;
+    return this.prisma.project.findMany({
+      where: {
+        customer_id,
+        user_id,
+        completed: {
+          not: complete === 'all' ? null : complete === 'true' ? false : true,
+        },
+      },
+      orderBy: {
+        estimated_end_date: sortBy === SortByTodoEnum.URGENT ? 'asc' : 'desc',
+      },
+      skip: Number(limit) * Number(page) - Number(limit),
+      take: Number(limit),
     });
   }
 }

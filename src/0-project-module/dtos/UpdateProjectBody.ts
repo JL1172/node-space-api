@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -42,6 +43,9 @@ export class UpdatedProjectBody {
   )
   @IsNotEmpty({ message: 'Required.' })
   estimated_revenue: number;
+  @IsBoolean({ message: 'Must Be A Boolean Value.' })
+  @IsNotEmpty({ message: 'Required.' })
+  completed: boolean;
 }
 
 export class FinalUpdatedProjectBody {

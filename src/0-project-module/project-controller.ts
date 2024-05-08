@@ -1,9 +1,24 @@
-import { Body, Controller, HttpStatus, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ProjectPrismaProvider } from './providers/prisma';
 import { ProjectErrorHandler } from './providers/error';
 import { JwtProvider } from './providers/jwt';
 import { NewProjectBody } from './dtos/CreateProjectBody';
 import { FinalUpdatedProjectBody } from './dtos/UpdateProjectBody';
+import {
+  AllProjectsOfEveryCustomer,
+  AllProjectsOfOneCustomer,
+  OneProjectForOneCustomer,
+} from './dtos/ViewProjectBody';
+import { Request } from 'express';
 
 @Controller('/api/project')
 export class ProjectController {
@@ -69,6 +84,52 @@ export class ProjectController {
         body.customer_id,
         body,
       );
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Get('/view-project')
+  //set default query
+  //validate query
+  //validate cid exists in relation to uid
+  //validate pid exists in relation to cid and uid
+  //return different queries based off cid and pic values
+  public async getProject(
+    @Req() req: Request,
+    @Query()
+    query:
+      | AllProjectsOfEveryCustomer
+      | AllProjectsOfOneCustomer
+      | OneProjectForOneCustomer,
+  ) {
+    try {
+      this.jwt.validateJwtToken(req.headers.authorization);
+      const id = this.jwt.getDecodedJwtToken().id;
+      const { pid: project_id, cid: customer_id } = query;
+      //where pid and cid are both all
+      if (project_id === 'all' && customer_id === 'all') {
+        return this.prisma.getAllProjectsForAllCustomers(id, query);
+      } else if (project_id !== 'all' && customer_id !== 'all') {
+        return this.prisma.getOneProjectForOneCustomer(
+          Number(project_id),
+          Number(customer_id),
+          id,
+        );
+      } else if (project_id === 'all' && customer_id !== 'all') {
+        return this.prisma.getAllProjectsForOneCustomer(
+          Number(customer_id),
+          id,
+          query,
+        );
+      } else {
+        this.errorHandler.reportError(
+          'An Unexpected Problem Occurred.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     } catch (err) {
       this.errorHandler.reportError(
         'An Unexpected Problem Occurred.',
