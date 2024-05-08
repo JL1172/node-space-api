@@ -112,6 +112,8 @@ model Project {
   actual_revenue      Int?
   created_at          DateTime?        @default(now())
   updated_at          DateTime?        @updatedAt()
+
+  @@unique([user_id, customer_id, project_title, estimated_end_date])
 }
 
 model ProjectExpense {

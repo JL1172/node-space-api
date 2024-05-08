@@ -1,7 +1,8 @@
-import { Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ProjectPrismaProvider } from './providers/prisma';
 import { ProjectErrorHandler } from './providers/error';
 import { JwtProvider } from './providers/jwt';
+import { NewProjectBody } from './dtos/CreateProjectBody';
 
 @Controller('/api/project')
 export class ProjectController {
@@ -33,9 +34,16 @@ export class ProjectController {
      * get('/monthly-profit')
      */
   @Post('/create-project')
-  public async createProject() {
+  //validate body
+  //sanitize body
+  //validate customer with id exists
+  //post
+  public async createProjectForCustomer(@Body() body: NewProjectBody) {
     try {
-      return 'created proj';
+      const dateToInsertIntoDb = new Date(body.estimated_end_date);
+      body.estimated_end_date = dateToInsertIntoDb;
+      const result = await this.prisma.createProject(body);
+      return result;
     } catch (err) {
       this.errorHandler.reportError(
         'An Unexpected Problem Occurred.',

@@ -9,6 +9,13 @@ import {
   VerifyTokenIsValid,
 } from './middleware/controller-middleware';
 import { JwtProvider } from './providers/jwt';
+import {
+  SanitizeNewProjectBody,
+  ValidateCustomerWithIdExists,
+  ValidateDateIsValid,
+  ValidateNewProjectBody,
+  ValidateProjectIsUnique,
+} from './middleware/create-project';
 
 @Module({
   imports: [],
@@ -29,5 +36,14 @@ export class ProjectModule implements NestModule {
         VerifyTokenIsValid,
       )
       .forRoutes('/api/project/*');
+    consumer
+      .apply(
+        ValidateNewProjectBody,
+        SanitizeNewProjectBody,
+        ValidateDateIsValid,
+        ValidateCustomerWithIdExists,
+        ValidateProjectIsUnique,
+      )
+      .forRoutes('/api/project/create-project');
   }
 }
