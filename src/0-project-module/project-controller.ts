@@ -1,8 +1,9 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Put } from '@nestjs/common';
 import { ProjectPrismaProvider } from './providers/prisma';
 import { ProjectErrorHandler } from './providers/error';
 import { JwtProvider } from './providers/jwt';
 import { NewProjectBody } from './dtos/CreateProjectBody';
+import { FinalUpdatedProjectBody } from './dtos/UpdateProjectBody';
 
 @Controller('/api/project')
 export class ProjectController {
@@ -12,7 +13,7 @@ export class ProjectController {
     private readonly jwt: JwtProvider,
   ) {}
   /**
-     * post('/create-project')
+     * post('/create-project') ()
      * put('/update-project') [making put will make this more flexible]
      * get('/view-project') [this will take query parameters, limit, page, sortBy(when it is supposed to be finished the soonest), page=1 complete=completedEnum, id=all||number, cid=all||number]
      * delete('/remove-project') 
@@ -36,14 +37,38 @@ export class ProjectController {
   @Post('/create-project')
   //validate body
   //sanitize body
+  //validate date is valid
   //validate customer with id exists
-  //post
+  //validate project is unique
   public async createProjectForCustomer(@Body() body: NewProjectBody) {
     try {
       const dateToInsertIntoDb = new Date(body.estimated_end_date);
       body.estimated_end_date = dateToInsertIntoDb;
       const result = await this.prisma.createProject(body);
       return result;
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Put('/update-project')
+  //validate body
+  //sanitize
+  //validate date is valid
+  //validate customer with id exists
+  //validate project is unique besides record of itself
+  public async updateProjectForCustomer(@Body() body: FinalUpdatedProjectBody) {
+    const newDate = new Date(body.estimated_end_date);
+    body.estimated_end_date = newDate;
+    try {
+      return await this.prisma.updateProject(
+        body.id,
+        body.user_id,
+        body.customer_id,
+        body,
+      );
     } catch (err) {
       this.errorHandler.reportError(
         'An Unexpected Problem Occurred.',

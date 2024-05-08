@@ -16,6 +16,11 @@ import {
   ValidateNewProjectBody,
   ValidateProjectIsUnique,
 } from './middleware/create-project';
+import {
+  ValidateProjectIsUniqueForUpdatedProject,
+  ValidateProjectWithIdInRelationToCustomerAndUserExists,
+  ValidateUpdatedProjectBody,
+} from './middleware/update-project';
 
 @Module({
   imports: [],
@@ -45,5 +50,15 @@ export class ProjectModule implements NestModule {
         ValidateProjectIsUnique,
       )
       .forRoutes('/api/project/create-project');
+    consumer
+      .apply(
+        ValidateUpdatedProjectBody,
+        SanitizeNewProjectBody,
+        ValidateDateIsValid,
+        ValidateCustomerWithIdExists,
+        ValidateProjectWithIdInRelationToCustomerAndUserExists,
+        ValidateProjectIsUniqueForUpdatedProject,
+      )
+      .forRoutes('/api/project/update-project');
   }
 }

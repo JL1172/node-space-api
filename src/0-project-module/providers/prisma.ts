@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Customer, JwtToken, PrismaClient, Project } from '@prisma/client';
 import { SingletonPrismaProvider } from 'src/global/global-utils/providers/singleton-prisma';
 import { NewProjectBody } from '../dtos/CreateProjectBody';
+import { FinalUpdatedProjectBody } from '../dtos/UpdateProjectBody';
 
 @Injectable()
 export class ProjectPrismaProvider {
@@ -37,5 +38,42 @@ export class ProjectPrismaProvider {
   }
   public async createProject(newProject: NewProjectBody): Promise<Project> {
     return await this.prisma.project.create({ data: newProject });
+  }
+  public async validateProjectIsUniqueBesidesSelf(
+    user_id: number,
+    customer_id: number,
+    project_title: string,
+    estimated_end_date: Date,
+    proj_id: number,
+  ) {
+    return await this.prisma.project.findFirst({
+      where: {
+        id: { not: proj_id },
+        user_id,
+        customer_id,
+        project_title,
+        estimated_end_date,
+      },
+    });
+  }
+  public async validateProjectWithIdExists(
+    proj_id: number,
+    user_id: number,
+    customer_id: number,
+  ): Promise<Project> {
+    return await this.prisma.project.findFirst({
+      where: { id: proj_id, user_id, customer_id },
+    });
+  }
+  public async updateProject(
+    proj_id: number,
+    user_id: number,
+    customer_id: number,
+    updatedProject: FinalUpdatedProjectBody,
+  ): Promise<Project> {
+    return await this.prisma.project.update({
+      where: { id: proj_id, user_id, customer_id },
+      data: updatedProject,
+    });
   }
 }
