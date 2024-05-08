@@ -21,6 +21,11 @@ import {
 } from './dtos/ViewProjectBody';
 import { Request } from 'express';
 import { DeleteProjectBody } from './dtos/DeleteProjectBody';
+import { CreateProjectExpenseBody } from './dtos/CreateProjectExpense';
+import {
+  ViewProjectExpenseBody,
+  ViewProjectExpenseBodyAll,
+} from './dtos/ViewProjectExpenseBody';
 
 @Controller('/api/project')
 export class ProjectController {
@@ -39,11 +44,6 @@ export class ProjectController {
      * put('/update-project-expense')
      * get('/project-expense) [limit, page, sortBy=price, orderBy=asc||desc, cid=1, id=all||number]
      * delete('/remove-project-expense') 
-      
-     * post('/create-project-todo')
-     * put('/update-project-todo')
-     * get('/project-todo') [all associated with proj or one]
-     * delete('/remove-project-todo')
      
      * get('/project-expenses')
      * get('/budget-insights') (returns if we are in project or out of project)
@@ -151,6 +151,42 @@ export class ProjectController {
         Number(query.cid),
       );
       return 'Project Successfully Deleted.';
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Post('/create-project-expense')
+  //validate req.body
+  //sanitize req.body
+  //validate project with id exists
+  //customer exists
+  //validate project that this expense is associated with has a valida customer id and user id associated w it
+  public async createProjectExpense(@Body() body: CreateProjectExpenseBody) {
+    try {
+      return await this.prisma.createExpense(body);
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Get('/project-expense')
+  public async viewProjectExpenses(
+    @Query() query: ViewProjectExpenseBody | ViewProjectExpenseBodyAll,
+  ) {
+    //set default query params
+    //validate default query params
+    //limit = 10, page = 1, sortBy=created_at, orderBy=asc, pid=number, eid=all|numberr
+    try {
+      if (query.eid === 'all') {
+        return await this.prisma.findExpenses(Number(query.pid), query);
+      } else {
+        return await this.prisma.findExpenseWithId(Number(query.eid));
+      }
     } catch (err) {
       this.errorHandler.reportError(
         'An Unexpected Problem Occurred.',

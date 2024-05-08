@@ -32,6 +32,16 @@ import {
   ValidateCustomerWithIdExistsDeleteProject,
   ValidateProjectExistsDeleteProject,
 } from './middleware/delete-project';
+import {
+  SanitizeExpense,
+  ValidateExpenseBody,
+  ValidateProjectIds,
+} from './middleware/create-project-expense';
+import {
+  SetDefaultProjectExpenseParams,
+  ValidateProjectExpenseParams,
+  ValidateProjectIdsViewProject,
+} from './middleware/view-project-expense';
 
 @Module({
   imports: [],
@@ -86,5 +96,15 @@ export class ProjectModule implements NestModule {
         ValidateProjectExistsDeleteProject,
       )
       .forRoutes('/api/project/remove-project');
+    consumer
+      .apply(ValidateExpenseBody, SanitizeExpense, ValidateProjectIds)
+      .forRoutes('/api/project/create-project-expense');
+    consumer
+      .apply(
+        SetDefaultProjectExpenseParams,
+        ValidateProjectExpenseParams,
+        ValidateProjectIdsViewProject,
+      )
+      .forRoutes('/api/project/project-expense');
   }
 }

@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Customer, JwtToken, PrismaClient, Project } from '@prisma/client';
+import {
+  Customer,
+  JwtToken,
+  PrismaClient,
+  Project,
+  ProjectExpense,
+} from '@prisma/client';
 import { SingletonPrismaProvider } from 'src/global/global-utils/providers/singleton-prisma';
 import { NewProjectBody } from '../dtos/CreateProjectBody';
 import { FinalUpdatedProjectBody } from '../dtos/UpdateProjectBody';
@@ -8,6 +14,8 @@ import {
   AllProjectsOfOneCustomer,
 } from '../dtos/ViewProjectBody';
 import { SortByTodoEnum } from 'src/0-customer-module/dtos/GetCustomerTodoBodies';
+import { CreateProjectExpenseBody } from '../dtos/CreateProjectExpense';
+import { ViewProjectExpenseBodyAll } from '../dtos/ViewProjectExpenseBody';
 
 @Injectable()
 export class ProjectPrismaProvider {
@@ -29,6 +37,26 @@ export class ProjectPrismaProvider {
         id: Number(id),
         user_id: Number(user_id_in_relation_to_customer),
       },
+    });
+  }
+  public async findExpenses(id: number, query: ViewProjectExpenseBodyAll) {
+    const { limit, page, orderBy, sortBy } = query;
+    return await this.prisma.projectExpense.findMany({
+      where: {
+        project_id: id,
+      },
+      orderBy: { [sortBy]: orderBy },
+      skip: Number(limit) * Number(page) - Number(limit),
+      take: Number(limit),
+    });
+  }
+  public async findExpenseWithId(id: number) {
+    return this.prisma.projectExpense.findUnique({ where: { id } });
+  }
+  public async findProjectWithId(id: number) {
+    return await this.prisma.project.findUnique({
+      where: { id },
+      select: { customer_id: true, user_id: true },
     });
   }
   public async validateProjectIsUnique(
@@ -60,6 +88,11 @@ export class ProjectPrismaProvider {
         estimated_end_date,
       },
     });
+  }
+  public async createExpense(
+    expense: CreateProjectExpenseBody,
+  ): Promise<ProjectExpense> {
+    return this.prisma.projectExpense.create({ data: expense });
   }
   public async validateProjectWithIdExists(
     proj_id: number,
