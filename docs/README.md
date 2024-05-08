@@ -3,15 +3,14 @@
 2. [x] create endpoint to view messages with that customer (filter by limit 10, filter by date or specific date (default is latest to oldest), paginate, filter by content: all is default but can view only files) (get)
 3. [x] create endpoint to view customers 
 4. [x] create endpoint to view customer's contact information (get)
-5. [ ] create endpoint to update customer's contact information (put)
-8. [ ] create endpoint to create todo task with customer
-9. [ ] create endpoint to toggle status of todo task with customer
-10. [ ] create endpoint to view todos (in progress, past completed)
+5. [x] create endpoint to update customer's contact information (put)
+8. [x] create endpoint to create todo task with customer
+9. [x] create endpoint to toggle status of todo task with customer
+10. [x] create endpoint to view todos (in progress, past completed)
 12. [ ] create endpoint to view projects (query by customer, latest to oldest, with completed and uncompleted statuses, can view only completed, can view by date, can view by oldest to latest, limit 10 per page)
 13. [ ] create endpoint to create project with a customer
 14. [ ] create endpoint to update projects that are in progress (add documentation, update details)
 15. [ ] create endpoint to toggle status of project
-16. [ ] create endpoint to automatically send invoice notifications to customers via email for invoicing 
 18. [ ] create endpoint that allows me to add expenses to a project, along with details of its receipts (if any)
 19. [ ] create endpoint that shows me if a project is within its budget
 20. [ ] create an endpoint that shows me all the times my projects have gone over budget
