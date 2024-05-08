@@ -130,4 +130,13 @@ export class ProjectPrismaProvider {
       take: Number(limit),
     });
   }
+  public async removeProject(
+    id: number,
+    user_id: number,
+    customer_id: number,
+  ): Promise<void> {
+    await this.prisma.project.delete({
+      where: { id, user_id, customer_id },
+    });
+  }
 }

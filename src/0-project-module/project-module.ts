@@ -27,6 +27,11 @@ import {
   ValidateProjectExists,
   ValidateQueryParams,
 } from './middleware/get-project';
+import {
+  ValidatDeleteProjectBody,
+  ValidateCustomerWithIdExistsDeleteProject,
+  ValidateProjectExistsDeleteProject,
+} from './middleware/delete-project';
 
 @Module({
   imports: [],
@@ -74,5 +79,12 @@ export class ProjectModule implements NestModule {
         ValidateProjectExists,
       )
       .forRoutes('/api/project/view-project');
+    consumer
+      .apply(
+        ValidatDeleteProjectBody,
+        ValidateCustomerWithIdExistsDeleteProject,
+        ValidateProjectExistsDeleteProject,
+      )
+      .forRoutes('/api/project/remove-project');
   }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Post,
@@ -19,6 +20,7 @@ import {
   OneProjectForOneCustomer,
 } from './dtos/ViewProjectBody';
 import { Request } from 'express';
+import { DeleteProjectBody } from './dtos/DeleteProjectBody';
 
 @Controller('/api/project')
 export class ProjectController {
@@ -130,6 +132,25 @@ export class ProjectController {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Delete('/remove-project')
+  public async removeProject(@Query() query: DeleteProjectBody) {
+    //verify customer exists
+    //verify id of project exist in relation to customer and to user
+    //delete
+    try {
+      await this.prisma.removeProject(
+        Number(query.pid),
+        Number(query.uid),
+        Number(query.cid),
+      );
+      return 'Project Successfully Deleted.';
     } catch (err) {
       this.errorHandler.reportError(
         'An Unexpected Problem Occurred.',
