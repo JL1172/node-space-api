@@ -45,6 +45,11 @@ import {
   ValidateTodoIsUniqueForUpdateInstance,
   ValidateUpdatedCustomerTodoBody,
 } from './middleware/update-customer-todo';
+import {
+  SetDefaultQueryParamsForGetTodoEndpoint,
+  ValidateIdRelationships,
+  ValidateQueryParamsForGetTodoEndpoint,
+} from './middleware/get-customer-todo';
 
 @Module({
   imports: [],
@@ -85,7 +90,7 @@ export class CustomerModule implements NestModule {
         '/api/customer/update-customer-info',
         '/api/customer/create-customer-todo',
         '/api/customer/update-customer-todo',
-        '/api/customer/customer-todos/:id',
+        '/api/customer/view-customer-todo/',
       );
     consumer
       .apply(
@@ -123,5 +128,12 @@ export class CustomerModule implements NestModule {
         ValidateTodoIsUniqueForUpdateInstance,
       )
       .forRoutes('/api/customer/update-customer-todo');
+    consumer
+      .apply(
+        SetDefaultQueryParamsForGetTodoEndpoint,
+        ValidateQueryParamsForGetTodoEndpoint,
+        ValidateIdRelationships,
+      )
+      .forRoutes('/api/customer/view-customer-todo');
   }
 }

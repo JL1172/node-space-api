@@ -16,12 +16,52 @@ import { ParamBody, QueryBody } from '../dtos/ViewMessagesBodies';
 import { UpdatedCustomerBody } from '../dtos/UpdatedCustomerBody';
 import { CustomerTodo } from '../dtos/CustomerTodoBody';
 import { UpdatedCustomerTodo } from '../dtos/UpdatedCustomerTodoBody';
+import {
+  CompletedEnum,
+  QueryParamsIdAllTodoEndpointBody,
+  SortByTodoEnum,
+} from '../dtos/GetCustomerTodoBodies';
 
 @Injectable()
 export class CustomerPrismaProvider {
   private readonly prisma: PrismaClient;
   constructor() {
     this.prisma = SingletonPrismaProvider.prisma_instance;
+  }
+  public async getAllTodosRelatedToUserAndCustomer(
+    customer_id: number,
+    user_id: number,
+    query: QueryParamsIdAllTodoEndpointBody,
+  ): Promise<Todo[]> {
+    const { limit, completed, page, sortBy } = query;
+    return await this.prisma.todo.findMany({
+      where: {
+        user_id,
+        customer_id,
+        completed: {
+          not:
+            completed === 'all'
+              ? null
+              : completed === CompletedEnum.TRUE
+                ? false
+                : true,
+        },
+      },
+      orderBy: {
+        deadline_date: sortBy === SortByTodoEnum.NOT_URGENT ? 'desc' : 'asc',
+      },
+      skip: Number(limit) * Number(page) - Number(limit),
+      take: Number(limit),
+    });
+  }
+  public async getTodoWithIdRelatedToUserAndCustomerr(
+    customer_id: number,
+    user_id: number,
+    todo_id: number,
+  ): Promise<Todo> {
+    return await this.prisma.todo.findUnique({
+      where: { id: todo_id, customer_id, user_id },
+    });
   }
   public async getTodoById(
     todo_id: number,

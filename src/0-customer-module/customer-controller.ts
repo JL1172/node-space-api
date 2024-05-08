@@ -38,6 +38,10 @@ import { UpdatedCustomerBody } from './dtos/UpdatedCustomerBody';
 import { Customer, Todo } from '@prisma/client';
 import { CustomerTodo } from './dtos/CustomerTodoBody';
 import { UpdatedCustomerTodo } from './dtos/UpdatedCustomerTodoBody';
+import {
+  QueryParamsIdAllTodoEndpointBody,
+  QueryParamsTodoEndpointBody,
+} from './dtos/GetCustomerTodoBodies';
 
 @Controller('/api/customer')
 export class CustomerController {
@@ -340,18 +344,65 @@ export class CustomerController {
       );
     }
   }
-  @Get('/customer-todos/:id')
+  //this fetches one todo if id is set to something other than all
+  @Get('/view-customer-todo')
   /**
    * rate limit
    * jwt not blacklisted
    * jwt valid
-   * id is integer
-   * validte customer with id related to user with id exists
+   * 
+   * need to validate that req.body contains customer_id (that the todo is related to) and that it is number
+   * need to validate query params set default values transform req.query body;
+   *  
+   * 
+   * 
    * query parameters will be completed=false || completed=true || completed=all (default query parameters set)
+   * validte customer with id related to user with id exists
    * sortby deadline that is the closest
    * return todos
+   *
+
+   * 
+   * QUERY PARAMS
+   * sortBy=have the closest deadline (urgent)
+   * orderBy=asc || desc
+   * limit=10
+   * page=1
+   * id=all
+
+   *
+   * REQBODY
+   * customer_id
    */
-  public async getCustomerTodos() {
-    return 'Successfully get customer todos';
+  public async getCustomerTodos(
+    @Query()
+    query: QueryParamsIdAllTodoEndpointBody | QueryParamsTodoEndpointBody,
+    @Req() req: Request,
+  ) {
+    try {
+      this.jwt.validateJwtToken(req.headers.authorization);
+      const user_id = this.jwt.getDecodedJwtToken().id;
+      const { cid } = query;
+      if (query.id === 'all') {
+        //path for all
+        const result = await this.prisma.getAllTodosRelatedToUserAndCustomer(
+          Number(cid),
+          user_id,
+          query,
+        );
+        return result;
+      } else {
+        return await this.prisma.getTodoWithIdRelatedToUserAndCustomerr(
+          Number(cid),
+          user_id,
+          Number(query.id),
+        );
+      }
+    } catch (err) {
+      this.errorHandler.reportError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
