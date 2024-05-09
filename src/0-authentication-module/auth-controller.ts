@@ -94,4 +94,8 @@ export class AuthenticationController {
     await this.prisma.createNewJwtToken(tokenToInsertIntoDb);
     return 'Successfully Logged Out.';
   }
+  @Get('/restricted')
+  public restrictedRoute(): { authorized: boolean } {
+    return { authorized: true };
+  }
 }

@@ -49,6 +49,10 @@ import {
   ValidateJwtTokenForLogout,
   ValidateLogoutBody,
 } from './middleware /logout';
+import {
+  RestrictedRouteRateLimiter,
+  ValidateJwtIsValidForRestrictedRoute,
+} from './middleware /restricted';
 
 @Module({
   imports: [],
@@ -115,5 +119,12 @@ export class AuthenticationModule implements NestModule {
         ValidateJwtTokenForLogout,
       )
       .forRoutes('/api/auth/logout');
+    consumer
+      .apply(
+        RestrictedRouteRateLimiter,
+        ValidateTokenIsNotBlacklisted,
+        ValidateJwtIsValidForRestrictedRoute,
+      )
+      .forRoutes('/api/auth/restricted');
   }
 }
