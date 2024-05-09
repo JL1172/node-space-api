@@ -104,11 +104,11 @@ export class AuthenticationModule implements NestModule {
     consumer
       .apply(
         ResetPasswordRateLimiter,
+        ValidateTokenIsNotBlacklisted,
+        ValidateJwtToken,
         ValidateResetPasswordBody,
         ValidateResetPasswordHeaders,
         SanitizeResetPasswordBody,
-        ValidateTokenIsNotBlacklisted,
-        ValidateJwtToken,
       )
       .forRoutes('/api/auth/reset-password');
     consumer
