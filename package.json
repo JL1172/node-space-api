@@ -17,6 +17,7 @@
     "soft-reset": "cd src/0-customer-module/__tests__/db-test-scripts && npx ts-node db-test-script.ts",
     "delete:todo": "cd prisma/prisma-scripts && npx ts-node delete-todos.ts",
     "test:all": "jest --verbose --runInBand --forceExit",
+    "delete:token": "cd prisma/prisma-scripts && npx ts-node deleteJwt.ts",
     "test:customer:all": "jest 0-customer-module --verbose --runInBand --watchAll --detectOpenHandles ",
     "test:customer:new-customer": "jest create-new-customer.test.ts --verbose --runInBand --watchAll --detectOpenHandles",
     "test:customer:draft-message": "jest draft-message-to-customer.test.ts --watchAll --verbose --runInBand --detectOpenHandles",

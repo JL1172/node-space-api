@@ -68,7 +68,8 @@ export class AuthenticationController {
       //find user with id
       const user = await this.prisma.getUserWithId(decodedToken.id);
       //update password
-      user.password = body.password;
+      const hashed = await this.bcrypt.hashPassword(body.password);
+      user.password = hashed;
       //create object for token creation
       const tokenToInsertIntoDb = {
         token,
