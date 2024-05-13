@@ -3,6 +3,7 @@ import * as nodemail from 'nodemailer';
 
 export enum EmailMarkup {
   PASSWORD_RESET = 'PASSWORD_RESET',
+  VERIFY_EMAIL = 'VERIFY_EMAIL',
 }
 
 @Injectable()
@@ -13,9 +14,16 @@ export class Mailer {
   ): string => {
     return `<h5>Dear ${email},</h5><p>Thank you for choosing our service! To complete your password change and ensure the security of your account, please use the following verification code:</p>Verification Code: <strong>${random6DigitCode}</strong><p>Please enter this code on our website/app within the next <em>5 Minutes</em> to change your password.</p><p>If you did not request this verification code, please ignore this email.</p><p>Thank you,</p><p>Node Space Team</p>`;
   };
+  private htmlForEmailVerification = (
+    email?: string,
+    random6DigitCode?: string,
+  ): string => {
+    return `<h5>Dear ${email},</h5><p>Thank you for choosing our service! To complete your email verification and ensure the security of your account, please use the following verification code:</p>Verification Code: <strong>${random6DigitCode}</strong><p>Please enter this code on our website/app within the next <em>5 Minutes</em> to verify your email.</p><p>If you did not request this verification code, please ignore this email.</p><p>Thank you,</p><p>Node Space Team</p>`;
+  };
   private readonly respectiveEmailMarkupFunctions: [
     (email: string, random6DigitCode: string) => string,
-  ] = [this.htmlForPasswordReset];
+    (email: string, random6DigitCode: string) => string,
+  ] = [this.htmlForPasswordReset, this.htmlForEmailVerification];
   private readonly nodemailer = nodemail.createTransport({
     host: 'smtp.gmail.com',
     auth: {

@@ -11,7 +11,7 @@ import { AuthenticationPrismaProvider } from '../providers/prisma';
 import { EmailMarkup } from '../providers/email';
 
 @Injectable()
-export class VerifyCodeRateLimit implements NestMiddleware {
+export class VerifyCodeRateLimitRegistration implements NestMiddleware {
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly limiter = ratelimit.rateLimit({
     windowMs: 1000 * 15 * 60,
@@ -29,7 +29,9 @@ export class VerifyCodeRateLimit implements NestMiddleware {
 }
 
 @Injectable()
-export class ValidateVerificationCodeBody implements NestMiddleware {
+export class ValidateVerificationCodeBodyRegistration
+  implements NestMiddleware
+{
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   async use(req: Request, res: Response, next: NextFunction) {
     const objectToValidate = plainToClass(VerificationCodeBody, req.body);
@@ -51,7 +53,9 @@ export class ValidateVerificationCodeBody implements NestMiddleware {
 }
 
 @Injectable()
-export class SanitizeVerificationCodeBody implements NestMiddleware {
+export class SanitizeVerificationCodeBodyRegistration
+  implements NestMiddleware
+{
   private readonly validate = validator;
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   use(req: Request, res: Response, next: NextFunction) {
@@ -77,7 +81,9 @@ export class SanitizeVerificationCodeBody implements NestMiddleware {
 }
 
 @Injectable()
-export class ValidateEmailExistsVerificationCode implements NestMiddleware {
+export class ValidateEmailExistsVerificationCodeRegistration
+  implements NestMiddleware
+{
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
     private readonly prisma: AuthenticationPrismaProvider,
@@ -106,7 +112,7 @@ export class ValidateEmailExistsVerificationCode implements NestMiddleware {
 }
 
 @Injectable()
-export class ValidateVerificationCode implements NestMiddleware {
+export class ValidateVerificationCodeRegistration implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
     private readonly prisma: AuthenticationPrismaProvider,
@@ -116,7 +122,7 @@ export class ValidateVerificationCode implements NestMiddleware {
       const lastVerificationCode: VerificationCode =
         await this.prisma.getLastVerificationCode(
           req.body.email,
-          EmailMarkup.PASSWORD_RESET,
+          EmailMarkup.VERIFY_EMAIL,
         );
       //ensures there is a code and that it isnt false
       if (

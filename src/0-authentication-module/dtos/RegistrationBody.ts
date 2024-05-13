@@ -5,6 +5,8 @@ import {
   IsString,
   IsStrongPassword,
   Matches,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class RegistrationBody {
@@ -19,8 +21,13 @@ export class RegistrationBody {
   @IsNotEmpty({ message: 'Last Name Required.' })
   last_name: string;
   @IsNotEmpty({ message: 'Age Required.' })
+  @Max(100, { message: 'Must Be Less Than 100' })
+  @Min(18, { message: 'Must Be Greater Than 18.' })
   @IsNumberString({}, { message: 'Age Must Be A Number.' })
   age: number;
+  @IsNotEmpty({ message: 'Company Field Required.' })
+  @IsString({ message: 'Must Be A String Value.' })
+  company: string;
   @IsString({ message: 'Username Must Be String.' })
   @IsNotEmpty({ message: 'Username Is Required.' })
   @Matches(/^(?=.*[a-zA-Z])(?=.*\d).+/, {

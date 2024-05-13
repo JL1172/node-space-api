@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import {
+  GenerateEmailForEmailVerification,
   RateLimiter,
   SanitizeBody,
   ValidateBody,
@@ -13,6 +14,7 @@ import {
   SanitizeLoginBody,
   ValidateUserExists,
   ValidateUserPasswordIsCorrect,
+  ValidateUserEmailIsVerified,
 } from './middleware /login';
 import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
@@ -53,6 +55,20 @@ import {
   RestrictedRouteRateLimiter,
   ValidateJwtIsValidForRestrictedRoute,
 } from './middleware /restricted';
+import {
+  SanitizeVerificationCodeBodyRegistration,
+  ValidateEmailExistsVerificationCodeRegistration,
+  ValidateVerificationCodeBodyRegistration,
+  ValidateVerificationCodeRegistration,
+  VerifyCodeRateLimitRegistration,
+} from './middleware /verify-email';
+import {
+  GenerateEmailForEmailVerificationForGenerateEndpoint,
+  GenerateEndpointRateLimiter,
+  SanitizeChangePasswordBodyForGenerateEndpoint,
+  ValidateEmailExistsForGenerateEndpoint,
+  ValidateGenerateVerificationCodeBodyForGenerateEndpoint,
+} from './middleware /generate-verification-code';
 
 @Module({
   imports: [],
@@ -72,7 +88,13 @@ import {
 export class AuthenticationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(RateLimiter, ValidateBody, SanitizeBody, VerifyUserIsUnique)
+      .apply(
+        RateLimiter,
+        ValidateBody,
+        SanitizeBody,
+        VerifyUserIsUnique,
+        GenerateEmailForEmailVerification,
+      )
       .forRoutes('/api/auth/registration');
     consumer
       .apply(
@@ -80,6 +102,7 @@ export class AuthenticationModule implements NestModule {
         ValidateLoginBody,
         SanitizeLoginBody,
         ValidateUserExists,
+        ValidateUserEmailIsVerified,
         ValidateUserPasswordIsCorrect,
       )
       .forRoutes('/api/auth/login');
@@ -94,6 +117,15 @@ export class AuthenticationModule implements NestModule {
       .forRoutes('/api/auth/change-password');
     consumer
       .apply(
+        GenerateEndpointRateLimiter,
+        ValidateGenerateVerificationCodeBodyForGenerateEndpoint,
+        SanitizeChangePasswordBodyForGenerateEndpoint,
+        ValidateEmailExistsForGenerateEndpoint,
+        GenerateEmailForEmailVerificationForGenerateEndpoint,
+      )
+      .forRoutes('/api/auth//generate-verification-code');
+    consumer
+      .apply(
         VerifyCodeRateLimit,
         ValidateVerificationCodeBody,
         SanitizeVerificationCodeBody,
@@ -101,6 +133,15 @@ export class AuthenticationModule implements NestModule {
         ValidateVerificationCode,
       )
       .forRoutes('/api/auth/verify-code');
+    consumer
+      .apply(
+        VerifyCodeRateLimitRegistration,
+        ValidateVerificationCodeBodyRegistration,
+        SanitizeVerificationCodeBodyRegistration,
+        ValidateEmailExistsVerificationCodeRegistration,
+        ValidateVerificationCodeRegistration,
+      )
+      .forRoutes('/api/auth/verify-email');
     consumer
       .apply(
         ResetPasswordRateLimiter,

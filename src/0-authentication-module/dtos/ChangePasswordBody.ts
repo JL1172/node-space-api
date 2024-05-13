@@ -1,3 +1,4 @@
+import { CodeType } from '@prisma/client';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class ChangePasswordBody {
@@ -10,4 +11,5 @@ export class VerificationCodeBodyToInsertIntoDb {
   user_email: string;
   verification_code: string;
   expiration_date: Date;
+  code_type: CodeType;
 }

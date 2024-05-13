@@ -1,23 +1,22 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-import { NextFunction, Request, Response } from 'express';
-import * as ratelimit from 'express-rate-limit';
 import { AuthenticationErrorHandler } from '../providers/error';
+import { RandomCodeGenerator } from '../providers/random-code';
+import { AuthenticationPrismaProvider } from '../providers/prisma';
+import { EmailMarkup, Mailer } from '../providers/email';
+import { NextFunction, Request, Response } from 'express';
+import { User } from '@prisma/client';
+import * as validator from 'validator';
+import * as ratelimit from 'express-rate-limit';
 import { plainToClass } from 'class-transformer';
 import { ChangePasswordBody } from '../dtos/ChangePasswordBody';
 import { validateOrReject } from 'class-validator';
-import * as validator from 'validator';
-import { RandomCodeGenerator } from '../providers/random-code';
-import { EmailMarkup, Mailer } from '../providers/email';
-import { User } from '@prisma/client';
-import { UserEmailStorage } from '../providers/user-email';
-import { AuthenticationPrismaProvider } from '../providers/prisma';
 
 @Injectable()
-export class ChangePasswordRateLimiter implements NestMiddleware {
+export class GenerateEndpointRateLimiter implements NestMiddleware {
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly limiter = ratelimit.rateLimit({
     windowMs: 1000 * 60 * 15,
-    limit: 5,
+    limit: 25,
     handler: () => {
       this.errorHandler.reportHttpError(
         'Too Many Requests.',
@@ -31,7 +30,9 @@ export class ChangePasswordRateLimiter implements NestMiddleware {
 }
 
 @Injectable()
-export class ValidateChangePasswordBody implements NestMiddleware {
+export class ValidateGenerateVerificationCodeBodyForGenerateEndpoint
+  implements NestMiddleware
+{
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   async use(req: Request, res: Response, next: NextFunction) {
     const objectToValidate = plainToClass(ChangePasswordBody, req.body);
@@ -53,7 +54,9 @@ export class ValidateChangePasswordBody implements NestMiddleware {
 }
 
 @Injectable()
-export class SanitizeChangePasswordBody implements NestMiddleware {
+export class SanitizeChangePasswordBodyForGenerateEndpoint
+  implements NestMiddleware
+{
   constructor(private readonly errorHandler: AuthenticationErrorHandler) {}
   private readonly validate = validator;
   use(req: Request, res: Response, next: NextFunction) {
@@ -75,11 +78,10 @@ export class SanitizeChangePasswordBody implements NestMiddleware {
   }
 }
 @Injectable()
-export class ValidateEmailExists implements NestMiddleware {
+export class ValidateEmailExistsForGenerateEndpoint implements NestMiddleware {
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
     private readonly prisma: AuthenticationPrismaProvider,
-    private readonly userStorage: UserEmailStorage,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
@@ -87,7 +89,6 @@ export class ValidateEmailExists implements NestMiddleware {
         req.body.email,
       );
       if (isValidUser !== null) {
-        this.userStorage.setUserEmail(isValidUser.email);
         next();
       } else {
         this.errorHandler.reportHttpError(
@@ -103,30 +104,32 @@ export class ValidateEmailExists implements NestMiddleware {
     }
   }
 }
+
 @Injectable()
-export class GenerateEmailWithVerificationCode implements NestMiddleware {
+export class GenerateEmailForEmailVerificationForGenerateEndpoint
+  implements NestMiddleware
+{
   constructor(
     private readonly errorHandler: AuthenticationErrorHandler,
     private readonly generateVerificationCode: RandomCodeGenerator,
     private readonly prisma: AuthenticationPrismaProvider,
     private readonly mailer: Mailer,
-    private readonly userStorage: UserEmailStorage,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     try {
-      const email: string = this.userStorage.getUserEmail();
+      const email: string = req.body.email;
       const random6DigitCode = this.generateVerificationCode.generateCode();
       await this.mailer.draftEmail(
         email,
-        'Verification Code For Password Change.',
-        EmailMarkup.PASSWORD_RESET,
+        'Email Verification.',
+        EmailMarkup.VERIFY_EMAIL,
         random6DigitCode,
       );
       await this.prisma.storeVerificationCode({
         user_email: email,
         expiration_date: this.generateVerificationCode.getExpirationDate(),
         verification_code: random6DigitCode,
-        code_type: EmailMarkup.PASSWORD_RESET,
+        code_type: EmailMarkup.VERIFY_EMAIL,
       });
       next();
     } catch (err) {

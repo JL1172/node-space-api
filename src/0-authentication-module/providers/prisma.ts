@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { JwtToken, PrismaClient, User, VerificationCode } from '@prisma/client';
+import {
+  CodeType,
+  JwtToken,
+  PrismaClient,
+  User,
+  VerificationCode,
+} from '@prisma/client';
 import { RegistrationBody } from '../dtos/RegistrationBody';
 import { VerificationCodeBodyToInsertIntoDb } from '../dtos/ChangePasswordBody';
 import { SingletonPrismaProvider } from '../../global/global-utils/providers/singleton-prisma';
@@ -57,9 +63,10 @@ export class AuthenticationPrismaProvider {
   }
   public async getLastVerificationCode(
     userEmail: string,
+    code_type: CodeType,
   ): Promise<VerificationCode> {
     return await this.prisma.verificationCode.findFirst({
-      where: { user_email: userEmail, is_valid: true },
+      where: { user_email: userEmail, is_valid: true, code_type: code_type },
     });
   }
   public async createNewJwtToken(token: {
@@ -85,6 +92,7 @@ export class AuthenticationPrismaProvider {
   ): Promise<void> {
     const findLastVerificationCode = await this.getLastVerificationCode(
       dataToInsert.user_email,
+      dataToInsert.code_type,
     );
     if (findLastVerificationCode !== null) {
       findLastVerificationCode['is_valid'] = false;

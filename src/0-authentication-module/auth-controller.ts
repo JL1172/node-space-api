@@ -29,7 +29,32 @@ export class AuthenticationController {
   public async register(@Body() body: RegistrationBody): Promise<string> {
     body.password = await this.bcrypt.hashPassword(body.password);
     await this.prisma.createNewUser(body);
-    return 'New Account Successfully Created.';
+    return 'New Account Successfully Created. Check Email For Verification Code.';
+  }
+  @Post('/generate-verification-code')
+  public generateVerificationCode() {
+    try {
+      return 'Check Your Inbox For Your Verification Code.';
+    } catch (err) {
+      this.errorHandler.reportHttpError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Post('/verify-email')
+  public async verifyEmail(@Body() body: User): Promise<string> {
+    try {
+      const userToInsert = await this.prisma.getUserByEmail(body.email);
+      userToInsert.email_verified = true;
+      await this.prisma.updateUserWithId(userToInsert.id, userToInsert);
+      return 'Successfully Verified Email.';
+    } catch (err) {
+      this.errorHandler.reportHttpError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Post('/login')
   @HttpCode(200)

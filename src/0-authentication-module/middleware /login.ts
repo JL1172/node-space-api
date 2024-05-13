@@ -101,6 +101,38 @@ export class ValidateUserExists implements NestMiddleware {
   }
 }
 
+@Injectable()
+export class ValidateUserEmailIsVerified implements NestMiddleware {
+  constructor(
+    private readonly errorHandler: AuthenticationErrorHandler,
+    private readonly prisma: AuthenticationPrismaProvider,
+  ) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    try {
+      const isValidUser = await this.prisma.getUserByUsername(
+        req.body.username,
+      );
+      if (isValidUser.email_verified === false) {
+        this.errorHandler.reportHttpError(
+          'Need To Verify Email. Click Button Below To Send Verification Code.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      next();
+    } catch (err) {
+      const message =
+        err.message ===
+        'Need To Verify Email. Click Button Below To Send Verification Code.'
+          ? 'Need To Verify Email. Click Button Below To Send Verification Code.'
+          : 'An Unexpected Error Occurred.';
+      this.errorHandler.reportHttpError(
+        message,
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
+
 /*need to do compare funciton*/
 @Injectable()
 export class ValidateUserPasswordIsCorrect implements NestMiddleware {
