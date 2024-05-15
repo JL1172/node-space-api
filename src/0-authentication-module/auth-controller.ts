@@ -15,6 +15,8 @@ import { UserClass } from './providers/login';
 import { AuthenticationErrorHandler } from './providers/error';
 import { ResetPasswordBody } from './dtos/ResetPasswordBody';
 import { AuthenticationPrismaProvider } from './providers/prisma';
+import { EmailMarkup, Mailer } from './providers/email';
+import { RandomCodeGenerator } from './providers/random-code';
 
 @Controller('/api/auth')
 export class AuthenticationController {
@@ -24,15 +26,39 @@ export class AuthenticationController {
     private readonly jwt: JwtProvider,
     private readonly user: UserClass,
     private readonly errorHandler: AuthenticationErrorHandler,
+    private readonly generateVerificationCode: RandomCodeGenerator,
+    private readonly mailer: Mailer,
   ) {}
   @Post('/registration')
   public async register(@Body() body: RegistrationBody): Promise<string> {
-    body.password = await this.bcrypt.hashPassword(body.password);
-    await this.prisma.createNewUser(body);
-    return 'New Account Successfully Created. Check Email For Verification Code.';
+    try {
+      body.password = await this.bcrypt.hashPassword(body.password);
+      await this.prisma.createNewUser(body);
+      const email: string = body.email;
+      const random6DigitCode = this.generateVerificationCode.generateCode();
+      await this.mailer.draftEmail(
+        email,
+        'Email Verification.',
+        EmailMarkup.VERIFY_EMAIL,
+        random6DigitCode,
+      );
+      await this.prisma.storeVerificationCode({
+        user_email: email,
+        expiration_date: this.generateVerificationCode.getExpirationDate(),
+        verification_code: random6DigitCode,
+        code_type: EmailMarkup.VERIFY_EMAIL,
+      });
+      return 'New Account Successfully Created. Check Email For Verification Code.';
+    } catch (err) {
+      console.log(err);
+      this.errorHandler.reportHttpError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Post('/generate-verification-code')
-  public generateVerificationCode() {
+  public generateVerificationCodeForEmail() {
     try {
       return 'Check Your Inbox For Your Verification Code.';
     } catch (err) {

@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import {
-  GenerateEmailForEmailVerification,
   RateLimiter,
   SanitizeBody,
   ValidateBody,
@@ -88,13 +87,7 @@ import {
 export class AuthenticationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(
-        RateLimiter,
-        ValidateBody,
-        SanitizeBody,
-        VerifyUserIsUnique,
-        GenerateEmailForEmailVerification,
-      )
+      .apply(RateLimiter, ValidateBody, SanitizeBody, VerifyUserIsUnique)
       .forRoutes('/api/auth/registration');
     consumer
       .apply(

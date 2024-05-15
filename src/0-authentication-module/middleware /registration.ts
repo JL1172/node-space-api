@@ -7,8 +7,6 @@ import { RegistrationBody } from '../dtos/RegistrationBody';
 import { validateOrReject } from 'class-validator';
 import { AuthenticationErrorHandler } from '../providers/error';
 import { AuthenticationPrismaProvider } from '../providers/prisma';
-import { RandomCodeGenerator } from '../providers/random-code';
-import { EmailMarkup, Mailer } from '../providers/email';
 
 @Injectable()
 export class RateLimiter implements NestMiddleware {
@@ -54,28 +52,35 @@ export class ValidateBody implements NestMiddleware {
 @Injectable()
 export class SanitizeBody implements NestMiddleware {
   private readonly validator = validator;
+  constructor(private readonly errorHander: AuthenticationErrorHandler) {}
   use(req: Request, res: Response, next: NextFunction) {
-    const body: RegistrationBody = req.body;
-    const keys: string[] = [
-      'email',
-      'password',
-      'company',
-      'email',
-      'first_name',
-      'last_name',
-      'username',
-    ];
-    keys.forEach((n: string) => {
-      body[n] = this.validator.trim(body[n]);
-      body[n] = this.validator.escape(body[n]);
-      body[n] = this.validator.blacklist(
-        body[n],
-        /[\x00-\x1F\s;'"\\<>]/.source,
+    try {
+      const body: RegistrationBody = req.body;
+      const keys: string[] = [
+        'email',
+        'password',
+        'company_name',
+        'first_name',
+        'last_name',
+        'username',
+      ];
+      keys.forEach((n: string) => {
+        body[n] = this.validator.trim(body[n]);
+        body[n] = this.validator.escape(body[n]);
+        body[n] = this.validator.blacklist(
+          body[n],
+          /[\x00-\x1F\s;'"\\<>]/.source,
+        );
+      });
+      req.body.email = this.validator.normalizeEmail(body['email']);
+      body['age'] = Number(body['age']);
+      next();
+    } catch (err) {
+      this.errorHander.reportHttpError(
+        'An Unexpected Problem Occurred.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    });
-    req.body.email = this.validator.normalizeEmail(body['email']);
-    body['age'] = Number(body['age']);
-    next();
+    }
   }
 }
 
@@ -106,40 +111,6 @@ export class VerifyUserIsUnique implements NestMiddleware {
       this.errorHander.reportHttpError(
         /Already/i.test(err.message) ? err.message : 'Internal Server Error',
         err.status ? err.status : HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-}
-
-@Injectable()
-export class GenerateEmailForEmailVerification implements NestMiddleware {
-  constructor(
-    private readonly errorHandler: AuthenticationErrorHandler,
-    private readonly generateVerificationCode: RandomCodeGenerator,
-    private readonly prisma: AuthenticationPrismaProvider,
-    private readonly mailer: Mailer,
-  ) {}
-  async use(req: Request, res: Response, next: NextFunction) {
-    try {
-      const email: string = req.body.email;
-      const random6DigitCode = this.generateVerificationCode.generateCode();
-      await this.mailer.draftEmail(
-        email,
-        'Email Verification.',
-        EmailMarkup.VERIFY_EMAIL,
-        random6DigitCode,
-      );
-      await this.prisma.storeVerificationCode({
-        user_email: email,
-        expiration_date: this.generateVerificationCode.getExpirationDate(),
-        verification_code: random6DigitCode,
-        code_type: EmailMarkup.VERIFY_EMAIL,
-      });
-      next();
-    } catch (err) {
-      this.errorHandler.reportHttpError(
-        'An Unexpected Problem Occurred.',
-        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

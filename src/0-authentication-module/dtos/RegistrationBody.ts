@@ -1,7 +1,7 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumberString,
+  IsNumber,
   IsString,
   IsStrongPassword,
   Matches,
@@ -23,11 +23,11 @@ export class RegistrationBody {
   @IsNotEmpty({ message: 'Age Required.' })
   @Max(100, { message: 'Must Be Less Than 100' })
   @Min(18, { message: 'Must Be Greater Than 18.' })
-  @IsNumberString({}, { message: 'Age Must Be A Number.' })
+  @IsNumber({}, { message: 'Age Must Be A Number.' })
   age: number;
   @IsNotEmpty({ message: 'Company Field Required.' })
   @IsString({ message: 'Must Be A String Value.' })
-  company: string;
+  company_name: string;
   @IsString({ message: 'Username Must Be String.' })
   @IsNotEmpty({ message: 'Username Is Required.' })
   @Matches(/^(?=.*[a-zA-Z])(?=.*\d).+/, {

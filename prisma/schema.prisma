@@ -23,6 +23,7 @@ model User {
   last_name        String
   age              Int
   email_verified   Boolean?           @default(false)
+  company_name     String
   VerificationCode VerificationCode[]
   Customer         Customer[]
   Message          Message[]
