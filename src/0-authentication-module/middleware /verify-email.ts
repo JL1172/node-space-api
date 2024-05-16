@@ -140,6 +140,7 @@ export class ValidateVerificationCodeRegistration implements NestMiddleware {
         );
       }
       //tests if code is past its expiration
+      //todo
       if (lastVerificationCode.expiration_date <= new Date()) {
         lastVerificationCode['is_valid'] = false;
         await this.prisma.updateLastVerificationCodeValidity(
