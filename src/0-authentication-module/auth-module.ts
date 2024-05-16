@@ -116,7 +116,7 @@ export class AuthenticationModule implements NestModule {
         ValidateEmailExistsForGenerateEndpoint,
         GenerateEmailForEmailVerificationForGenerateEndpoint,
       )
-      .forRoutes('/api/auth//generate-verification-code');
+      .forRoutes('/api/auth/generate-verification-code');
     consumer
       .apply(
         VerifyCodeRateLimit,

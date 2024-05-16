@@ -50,7 +50,6 @@ export class AuthenticationController {
       });
       return 'New Account Successfully Created. Check Email For Verification Code.';
     } catch (err) {
-      console.log(err);
       this.errorHandler.reportHttpError(
         'An Unexpected Problem Occurred.',
         HttpStatus.INTERNAL_SERVER_ERROR,
