@@ -96,6 +96,11 @@ export class ValidateEmailExistsVerificationCodeRegistration
           'Account Not Found. Restart Process.',
           HttpStatus.BAD_REQUEST,
         );
+      } else if (userEmail.email_verified === true) {
+        this.errorHandler.reportHttpError(
+          'Account Already Verified. Proceed To Sign In.',
+          HttpStatus.BAD_REQUEST,
+        );
       } else {
         next();
       }

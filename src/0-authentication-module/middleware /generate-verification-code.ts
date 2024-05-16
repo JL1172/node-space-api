@@ -88,13 +88,18 @@ export class ValidateEmailExistsForGenerateEndpoint implements NestMiddleware {
       const isValidUser: User = await this.prisma.getUserByEmail(
         req.body.email,
       );
-      if (isValidUser !== null) {
-        next();
-      } else {
+      if (isValidUser !== null && isValidUser.email_verified === true) {
+        this.errorHandler.reportHttpError(
+          'Account Already Verified, Proceed To Login.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (isValidUser === null) {
         this.errorHandler.reportHttpError(
           'Account Not Found.',
           HttpStatus.BAD_REQUEST,
         );
+      } else {
+        next();
       }
     } catch (err) {
       this.errorHandler.reportHttpError(
