@@ -14,7 +14,6 @@ export class SaplingClient {
       });
       return res;
     } catch (err) {
-      console.log(err);
       throw new HttpException(
         'An Unexpected Problem Occurred With The Rephrase Suggestions.',
         err?.status || HttpStatus.INTERNAL_SERVER_ERROR,

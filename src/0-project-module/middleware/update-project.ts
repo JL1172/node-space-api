@@ -20,7 +20,6 @@ export class ValidateUpdatedProjectBody implements NestMiddleware {
       next();
     } catch (err) {
       const errObj = {};
-      console.log(errObj);
       err.forEach((n) => (errObj[n.property] = n.constraints));
       this.errorHandler.reportError(errObj, HttpStatus.UNPROCESSABLE_ENTITY);
     }

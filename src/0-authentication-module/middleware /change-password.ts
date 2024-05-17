@@ -122,9 +122,10 @@ export class GenerateEmailWithVerificationCode implements NestMiddleware {
         EmailMarkup.PASSWORD_RESET,
         random6DigitCode,
       );
+      const expDate = this.generateVerificationCode.getExpirationDate();
       await this.prisma.storeVerificationCode({
         user_email: email,
-        expiration_date: this.generateVerificationCode.getExpirationDate(),
+        expiration_date: expDate,
         verification_code: random6DigitCode,
         code_type: EmailMarkup.PASSWORD_RESET,
       });

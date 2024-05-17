@@ -65,9 +65,10 @@ export class AuthenticationPrismaProvider {
     userEmail: string,
     code_type: CodeType,
   ): Promise<VerificationCode> {
-    return await this.prisma.verificationCode.findFirst({
+    const code = await this.prisma.verificationCode.findFirst({
       where: { user_email: userEmail, is_valid: true, code_type: code_type },
     });
+    return code;
   }
   public async createNewJwtToken(token: {
     token: string;

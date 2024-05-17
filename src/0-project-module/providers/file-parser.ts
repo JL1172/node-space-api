@@ -51,8 +51,7 @@ export class FileUtilProvider {
         png.on('parsed', () => {
           resolve(png);
         });
-        png.on('error', (error) => {
-          console.log(error);
+        png.on('error', (error) => {//eslint-disable-line
           reject(
             `Invalid File Type For File: ${file.originalname}, expected type PNG, JPEG, JPG`,
           );
